@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_nav_graph"
+    app:startDestination="@id/exploreFragment">
+
+    <fragment
+        android:id="@+id/exploreFragment"
+        android:name="com.example.eventme.fragments.ExploreFragment"
+        android:label="Explore">
+        <action
+            android:id="@+id/action_exploreFragment_to_mapActivity"
+            app:destination="@id/mapFragment" />
+        <action
+            android:id="@+id/action_exploreFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.example.eventme.fragments.MapFragment"
+        android:label="Map">
+        <action
+            android:id="@+id/action_mapActivity_to_profileFragment"
+            app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_mapActivity_to_exploreFragment"
+            app:destination="@id/exploreFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.eventme.fragments.ProfileFragment"
+        android:label="Profile">
+        <action
+            android:id="@+id/action_profileFragment_to_mapActivity"
+            app:destination="@id/mapFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_exploreFragment"
+            app:destination="@id/exploreFragment" />
+    </fragment>
+</navigation>
