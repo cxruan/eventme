@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_nav_graph"
     app:startDestination="@id/exploreFragment">
 
@@ -36,5 +37,21 @@
         <action
             android:id="@+id/action_profileFragment_to_exploreFragment"
             app:destination="@id/exploreFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_profileUnloggedInFragment"
+            app:destination="@id/profileUnloggedInFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/profileUnloggedInFragment"
+        android:name="com.example.eventme.fragments.ProfileUnloggedInFragment"
+        android:label="ProfileUnloggedInFragment" >
+        <action
+            android:id="@+id/action_profileUnloggedInFragment_to_mainActivity"
+            app:destination="@id/mainActivity" />
+    </fragment>
+    <activity
+        android:id="@+id/mainActivity"
+        android:name="com.example.eventme.MainActivity"
+        android:label="activity_main"
+        tools:layout="@layout/activity_main" />
 </navigation>
