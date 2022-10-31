@@ -7,7 +7,7 @@
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_height="200dp"
         android:layout_marginHorizontal="10dp"
         android:elevation="10dp"
         app:cardCornerRadius="20dp"
@@ -37,7 +37,7 @@
                 android:text="Log In / Sign Up"
                 android:textSize="18dp"
                 android:paddingVertical="10dp"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="30dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"

@@ -45,6 +45,16 @@ public class LoginFragment extends Fragment {
         binding.anonymousSignIn.setOnClickListener(this::onClickSignInAnonymously);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // Check auth on Activity start
+        if (mAuth.getCurrentUser() != null) {
+            sendToNavActivity();
+        }
+    }
+
     private boolean validate() {
         boolean valid = true;
 
