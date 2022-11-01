@@ -14,22 +14,19 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.example.eventme.R;
 import com.example.eventme.adapters.EventBoxAdapter;
 import com.example.eventme.databinding.FragmentProfileBinding;
-import com.example.eventme.models.Event;
-import com.example.eventme.models.User;
 import com.example.eventme.utils.GlideApp;
+import com.example.eventme.viewmodels.ProfileFragmentViewModel;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -41,13 +38,12 @@ public class ProfileFragment extends Fragment {
     private FragmentProfileBinding binding;
 
     private FirebaseAuth mAuth;
-    private DatabaseReference mUserReference;
+    private FirebaseDatabase mDatabase;
+    private FirebaseStorage mStorage;
     private RecyclerView mRecycler;
     private LinearLayoutManager mManager;
     private EventBoxAdapter mEventBoxAdapter;
-    private DatabaseReference mEventReference;
     ActivityResultLauncher<String> mGetContent;
-    private FirebaseStorage mStorage;
 
     @Nullable
     @Override
@@ -60,19 +56,17 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance();
         mStorage = FirebaseStorage.getInstance();
 
-        mAuth = FirebaseAuth.getInstance();
-        FirebaseUser firebaseUser = mAuth.getCurrentUser();
-        // if unauthenticated, prompt to log in or sign up
-        if (firebaseUser == null) {
+        // If unauthenticated, prompt to log in or sign up
+        if (mAuth.getCurrentUser() == null) {
             NavHostFragment.findNavController(this).navigate(R.id.action_profileFragment_to_profileUnloggedInFragment);
             return;
         }
 
-        mUserReference = FirebaseDatabase.getInstance().getReference().child("users").child(firebaseUser.getUid());
-        mEventReference = FirebaseDatabase.getInstance().getReference().child("events");
-
+        // Set up Adapter
         mEventBoxAdapter = new EventBoxAdapter();
 
         // Set up RecyclerView
@@ -81,36 +75,51 @@ public class ProfileFragment extends Fragment {
         mRecycler.setLayoutManager(mManager);
         mRecycler.setAdapter(mEventBoxAdapter);
 
+        // Hide info until data fetched
+        binding.name.setVisibility(View.INVISIBLE);
+        binding.infoRow.setVisibility(View.INVISIBLE);
+
+        // Subscribe to ViewModel data
+        ProfileFragmentViewModel model = new ViewModelProvider(requireActivity()).get(ProfileFragmentViewModel.class);
+        model.getUserData().observe(getViewLifecycleOwner(), user -> {
+            binding.name.setText(user.getFirstName() + " " + user.getLastName());
+            binding.birthday.setText(user.getBirthday());
+            binding.email.setText(user.getEmail());
+
+            // Show info now
+            binding.name.setVisibility(View.VISIBLE);
+            binding.infoRow.setVisibility(View.VISIBLE);
+            String path = user.getProfilePicture();
+            if (path != null) // Profile picture found
+                loadProfilePicture(path);
+            else // No profile picture, use default person drawable
+                binding.profilePic.setImageResource(R.drawable.ic_baseline_person_24);
+        });
+        model.getRegisteredEventsData().observe(getViewLifecycleOwner(), events -> {
+            mEventBoxAdapter.setItems(events);
+        });
+
+
         // Set up ActivityResultLauncher for picture uploading
-        mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(), new ActivityResultCallback<Uri>() {
-            @Override
-            public void onActivityResult(Uri uri) {
-                // Handle the returned Uri
-                String path = "users/" + mAuth.getUid() + "/" + uri.getLastPathSegment();
-                StorageReference ref = mStorage.getReference().child(path);
+        mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+            // Handle the returned Uri
+            String path = "users/" + mAuth.getUid() + "/" + uri.getLastPathSegment();
+            StorageReference ref = mStorage.getReference().child(path);
 
-                UploadTask uploadTask = ref.putFile(uri);
+            UploadTask uploadTask = ref.putFile(uri);
 
-                // Register observers to listen for when the download is done or if it fails
-                uploadTask
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception exception) {
-                                // Handle unsuccessful uploads
-                                Log.e(TAG, "Error uploading profile picture", exception);
-                                Toast.makeText(getContext(), "Error uploading profile picture", Toast.LENGTH_LONG).show();
-                            }
-                        })
-                        .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                mUserReference.child("profilePicture").setValue(path, (error, reference) -> {
-                                    loadProfilePicture(path);
-                                    Toast.makeText(getContext(), "Profile picture uploaded successfully", Toast.LENGTH_LONG).show();
-                                });
-                            }
-                        });
-            }
+            // Register observers to listen for when the download is done or if it fails
+            uploadTask
+                    .addOnFailureListener(exception -> {
+                        // Handle unsuccessful uploads
+                        Log.e(TAG, "Error uploading profile picture", exception);
+                        Toast.makeText(getContext(), "Error uploading profile picture", Toast.LENGTH_LONG).show();
+                    })
+                    .addOnSuccessListener(taskSnapshot -> mDatabase.getReference().child("users").child(mAuth.getUid()).child("profilePicture").setValue(path, (error, reference) -> {
+                        loadProfilePicture(path);
+                        model.updateUserData(); // Update ViewModel after profile picture uploaded successfully
+                        Toast.makeText(getContext(), "Profile picture uploaded successfully", Toast.LENGTH_LONG).show();
+                    }));
         });
 
         // Click listeners
@@ -118,49 +127,6 @@ public class ProfileFragment extends Fragment {
         binding.profilePic.setOnClickListener(this::onClickUploadProfilePic);
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        if (mAuth.getCurrentUser() != null) {
-            // Hide default value before data loaded
-            binding.name.setText("");
-            binding.infoRow.setVisibility(View.INVISIBLE);
-            binding.profilePic.setImageResource(android.R.color.transparent);
-
-            // Get user profile data
-            mUserReference.get().addOnCompleteListener(userTask -> {
-                if (userTask.isSuccessful()) {
-                    User user = userTask.getResult().getValue(User.class);
-                    binding.name.setText(user.getFirstName() + " " + user.getLastName());
-                    binding.birthday.setText(user.getBirthday());
-                    binding.email.setText(user.getEmail());
-                    binding.infoRow.setVisibility(View.VISIBLE);
-                    String path = user.getProfilePicture();
-                    if (path != null)
-                        loadProfilePicture(path);
-
-                    // Clear all previously fetched events
-                    mEventBoxAdapter.clearAllItem();
-                    // Get registered events
-                    for (String id : user.getRegisteredEvents().keySet()) {
-                        mEventReference.child(id).get().addOnCompleteListener(eventTask -> {
-                            if (eventTask.isSuccessful()) {
-                                Event event = eventTask.getResult().getValue(Event.class);
-                                mEventBoxAdapter.addItem(event);
-                            } else {
-                                Log.e(TAG, "Error getting event", eventTask.getException());
-                            }
-                        });
-                    }
-
-                } else {
-                    Log.e(TAG, "Error getting user data", userTask.getException());
-                }
-            });
-        }
-
-    }
 
     private void loadProfilePicture(String path) {
         StorageReference ref = mStorage.getReference().child(path);
