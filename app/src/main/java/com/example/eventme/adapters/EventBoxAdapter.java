@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventme.R;
@@ -17,9 +18,10 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
     private List<Event> mEvents;
 
     public EventBoxAdapter() {
-        mEvents = new ArrayList<Event>();
+        mEvents = new ArrayList<>();
     }
 
+    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View view = LayoutInflater.from(viewGroup.getContext())
@@ -42,6 +44,18 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
     public void addItem(Event event) {
         mEvents.add(event);
         notifyItemInserted(mEvents.size() - 1);
+    }
+
+    public void setItems(List<Event> events) {
+        mEvents = events;
+        notifyItemRangeChanged(0, mEvents.size());
+    }
+
+    public void clearAllItem() {
+        int size = mEvents.size();
+        mEvents.clear();
+        notifyItemRangeRemoved(0, size);
+
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
