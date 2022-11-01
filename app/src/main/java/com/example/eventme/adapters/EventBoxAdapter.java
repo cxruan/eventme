@@ -44,6 +44,13 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
         notifyItemInserted(mEvents.size() - 1);
     }
 
+    public void clearAllItem() {
+        int size = mEvents.size();
+        mEvents.clear();
+        notifyItemRangeRemoved(0, size);
+
+    }
+
     static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView nameView;
         public TextView costView;
