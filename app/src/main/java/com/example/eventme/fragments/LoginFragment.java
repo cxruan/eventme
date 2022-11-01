@@ -45,6 +45,16 @@ public class LoginFragment extends Fragment {
         binding.anonymousSignIn.setOnClickListener(this::onClickSignInAnonymously);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // Check auth on Activity start
+        if (mAuth.getCurrentUser() != null) {
+            sendToNavActivity();
+        }
+    }
+
     private boolean validate() {
         boolean valid = true;
 
@@ -85,7 +95,7 @@ public class LoginFragment extends Fragment {
             Log.d(TAG, "signIn:onComplete:" + task.isSuccessful());
 
             if (task.isSuccessful()) {
-                onAuthSuccess();
+                sendToNavActivity();
             } else {
                 Log.w(TAG, "signInWithEmailAndPassword:failure", task.getException());
                 Toast.makeText(getContext(), "Sign-in Failed", Toast.LENGTH_SHORT).show();
@@ -93,22 +103,7 @@ public class LoginFragment extends Fragment {
         });
     }
 
-    private void signInAnonymously() {
-        // Firebase Authentication will create an anonymous user without requirement of email and password
-        mAuth.signInAnonymously()
-                .addOnCompleteListener(getActivity(), task -> {
-                    Log.d(TAG, "signInAnonymously:onComplete:" + task.isSuccessful());
-                    if (task.isSuccessful()) {
-                        onAuthSuccess();
-                    } else {
-                        Log.w(TAG, "signInAnonymously::failure", task.getException());
-                        Toast.makeText(getContext(), "Sign-in Failed", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-
-    private void onAuthSuccess() {
+    private void sendToNavActivity() {
         // Go to NavActivity
         NavHostFragment.findNavController(this).navigate(R.id.action_loginFragment_to_navActivity);
     }
@@ -123,7 +118,6 @@ public class LoginFragment extends Fragment {
     }
 
     private void onClickSignInAnonymously(View view) {
-        signInAnonymously();
+        sendToNavActivity();
     }
-
 }
