@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventme.R;
 import com.example.eventme.models.Event;
+import com.example.eventme.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +95,7 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
         public void bind(Event event) {
             nameView.setText(event.getName());
             costView.setText(event.getCost().toString());
-            dateView.setText(event.getDate());
+            dateView.setText(Utils.formatDate(event.getDate()));
             timeView.setText(event.getTime());
             locationView.setText(event.getLocation());
             sponsorView.setText(event.getSponsor());
