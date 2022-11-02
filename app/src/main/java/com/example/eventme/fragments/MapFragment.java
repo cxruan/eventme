@@ -83,17 +83,21 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                             Event event = ds.getValue(Event.class);
                             allEvents.add(event);
                         }
+                        LatLng lastLatLng = new LatLng(0, 0);
                         System.out.println("yeahyeahyea");
                         for(Event event : allEvents){
                             double eventLon = event.getGeoLocation().get("lng");
                             double eventLat = event.getGeoLocation().get("lat");
+
                             googleMap.addMarker(new MarkerOptions()
                                     .position(new LatLng(eventLat, eventLon))
                                     .title(event.getName()));
+                            lastLatLng = new LatLng(eventLat, eventLon);
                             System.out.println(event.getName());
                             System.out.println(eventLon);
                             System.out.println(eventLat);
                         }
+                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lastLatLng,20));
                     }
 
                     @Override
