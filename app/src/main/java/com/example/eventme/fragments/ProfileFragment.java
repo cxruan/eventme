@@ -1,6 +1,6 @@
 package com.example.eventme.fragments;
 
-import android.net.Uri;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -19,13 +18,13 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.eventme.EventRegistrationActivity;
 import com.example.eventme.R;
 import com.example.eventme.adapters.EventBoxAdapter;
 import com.example.eventme.databinding.FragmentProfileBinding;
+import com.example.eventme.models.Event;
 import com.example.eventme.utils.GlideApp;
 import com.example.eventme.viewmodels.ProfileFragmentViewModel;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -68,6 +67,13 @@ public class ProfileFragment extends Fragment {
 
         // Set up Adapter
         mEventBoxAdapter = new EventBoxAdapter();
+        mEventBoxAdapter.setOnItemClickListener((position, v) -> {
+            // Pass eventId to Registration activity when clicking event box
+            Event event = mEventBoxAdapter.getItemByPos(position);
+            Intent intent = new Intent(requireActivity(), EventRegistrationActivity.class);
+            intent.putExtra("com.example.eventme.EventRegistration.eventId", event.getEventId());
+            startActivity(intent);
+        });
 
         // Set up RecyclerView
         mManager = new LinearLayoutManager(getActivity());
@@ -89,9 +95,9 @@ public class ProfileFragment extends Fragment {
             // Show info now
             binding.name.setVisibility(View.VISIBLE);
             binding.infoRow.setVisibility(View.VISIBLE);
-            String path = user.getProfilePicture();
-            if (path != null) // Profile picture found
-                loadProfilePicture(path);
+            String uri = user.getProfilePictureURI();
+            if (uri != null) // Profile picture found
+                loadProfilePicture(uri);
             else // No profile picture, use default person drawable
                 binding.profilePic.setImageResource(R.drawable.ic_baseline_person_24);
         });
@@ -115,11 +121,13 @@ public class ProfileFragment extends Fragment {
                         Log.e(TAG, "Error uploading profile picture", exception);
                         Toast.makeText(getContext(), "Error uploading profile picture", Toast.LENGTH_LONG).show();
                     })
-                    .addOnSuccessListener(taskSnapshot -> mDatabase.getReference().child("users").child(mAuth.getUid()).child("profilePicture").setValue(path, (error, reference) -> {
-                        loadProfilePicture(path);
-                        model.updateUserData(); // Update ViewModel after profile picture uploaded successfully
-                        Toast.makeText(getContext(), "Profile picture uploaded successfully", Toast.LENGTH_LONG).show();
-                    }));
+                    .addOnSuccessListener(taskSnapshot -> {
+                        mDatabase.getReference().child("users").child(mAuth.getUid()).child("profilePictureURI").setValue(path, (error, reference) -> {
+                            loadProfilePicture(taskSnapshot.getStorage().toString());
+                            model.updateUserData(); // Update ViewModel after profile picture uploaded successfully
+                            Toast.makeText(getContext(), "Profile picture uploaded successfully", Toast.LENGTH_LONG).show();
+                        });
+                    });
         });
 
         // Click listeners
@@ -128,8 +136,8 @@ public class ProfileFragment extends Fragment {
     }
 
 
-    private void loadProfilePicture(String path) {
-        StorageReference ref = mStorage.getReference().child(path);
+    private void loadProfilePicture(String uri) {
+        StorageReference ref = mStorage.getReferenceFromUrl(uri);
         GlideApp.with(this)
                 .load(ref)
                 .circleCrop()

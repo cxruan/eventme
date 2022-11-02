@@ -15,7 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHolder> {
+    private static ClickListener clickListener;
     private List<Event> mEvents;
+
+    public interface ClickListener {
+        void onItemClick(int position, View v);
+    }
 
     public EventBoxAdapter() {
         mEvents = new ArrayList<>();
@@ -55,10 +60,17 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
         int size = mEvents.size();
         mEvents.clear();
         notifyItemRangeRemoved(0, size);
-
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    public Event getItemByPos(int position) {
+        return mEvents.get(position);
+    }
+
+    public void setOnItemClickListener(ClickListener clickListener) {
+        EventBoxAdapter.clickListener = clickListener;
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public TextView nameView;
         public TextView costView;
         public TextView dateView;
@@ -68,6 +80,8 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
 
         public ViewHolder(View itemView) {
             super(itemView);
+
+            itemView.setOnClickListener(this);
 
             nameView = itemView.findViewById(R.id.name);
             costView = itemView.findViewById(R.id.cost);
@@ -85,7 +99,10 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
             locationView.setText(event.getLocation());
             sponsorView.setText(event.getSponsor());
         }
+
+        @Override
+        public void onClick(View v) {
+            clickListener.onItemClick(getAdapterPosition(), v);
+        }
     }
-
-
 }
