@@ -106,4 +106,6 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
             clickListener.onItemClick(getAdapterPosition(), v);
         }
     }
+
+
 }
