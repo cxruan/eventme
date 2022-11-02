@@ -54,13 +54,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     }
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        getAllEvents();
+        getAllEvents(googleMap);
         for(Event event : allEvents) {
 
             System.out.println(event.getGeoLocation());
-            googleMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(0, 0))
-                    .title("Marker"));
+
         }
     }
 
@@ -74,7 +72,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     }
 
 
-    public void getAllEvents(){
+    public void getAllEvents(GoogleMap googleMap){
         mDatabase.addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
@@ -85,7 +83,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                             Event event = ds.getValue(Event.class);
                             allEvents.add(event);
                         }
-                        isWithinDistance(10, 51.5007, 0.1246);
+                        System.out.println("yeahyeahyea");
+                        for(Event event : allEvents){
+                            double eventLon = event.getGeoLocation().get("lng");
+                            double eventLat = event.getGeoLocation().get("lat");
+                            googleMap.addMarker(new MarkerOptions()
+                                    .position(new LatLng(eventLat, eventLon))
+                                    .title(event.getName()));
+                            System.out.println(event.getName());
+                            System.out.println(eventLon);
+                            System.out.println(eventLat);
+                        }
                     }
 
                     @Override
