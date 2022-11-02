@@ -9,8 +9,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.eventme.R;
 import com.example.eventme.databinding.FragmentMapBinding;
 import com.example.eventme.models.Event;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -22,20 +29,39 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class MapFragment extends Fragment {
+public class MapFragment extends Fragment implements OnMapReadyCallback {
     private FragmentMapBinding binding;
 
     private DatabaseReference mDatabase;
     private FirebaseAuth mAuth;
     private ArrayList<Event> allEvents = new ArrayList<>();
 
+
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentMapBinding.inflate(inflater, container, false);
 
+        // Initialize map fragment
+        SupportMapFragment mapFragment=(SupportMapFragment)
+                getChildFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
         return binding.getRoot();
 
+    }
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        getAllEvents();
+        for(Event event : allEvents) {
+
+            System.out.println(event.getGeoLocation());
+            googleMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(0, 0))
+                    .title("Marker"));
+        }
     }
 
     @Override
@@ -43,9 +69,10 @@ public class MapFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mDatabase = FirebaseDatabase.getInstance().getReference().child("events");
         mAuth = FirebaseAuth.getInstance();
-        getAllEvents();
+
 
     }
+
 
     public void getAllEvents(){
         mDatabase.addListenerForSingleValueEvent(
@@ -67,6 +94,8 @@ public class MapFragment extends Fragment {
                     }
                 });
     }
+
+
 
     public void isWithinDistance(int kilometers, double currentLon, double currentLat){
         System.out.println("yeahyeahyeah");
