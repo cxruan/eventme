@@ -17,4 +17,16 @@
     <string name="map">Map</string>
     <string name="profile">Profile</string>
     <string name="log_out">Log out</string>
+    <string-array name="searchBy_array">
+        <item>Name</item>
+        <item>Location</item>
+        <item>Sponsor</item>
+        <item>Type</item>
+    </string-array>
+    <string-array name="sortBy_array">
+        <item>Alphabetical</item>
+        <item>Cost</item>
+        <item>Date</item>
+        <item>Location</item>
+    </string-array>
 </resources>

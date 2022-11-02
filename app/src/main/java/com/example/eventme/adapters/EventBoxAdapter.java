@@ -86,4 +86,6 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
             sponsorView.setText(event.getSponsor());
         }
     }
+
+
 }
