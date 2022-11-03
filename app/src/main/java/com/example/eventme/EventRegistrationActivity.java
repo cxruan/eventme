@@ -2,8 +2,10 @@ package com.example.eventme;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.eventme.databinding.ActivityEventRegistrationBinding;
@@ -31,6 +33,9 @@ public class EventRegistrationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityEventRegistrationBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        setSupportActionBar(binding.toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mEventId = getIntent().getStringExtra("com.example.eventme.EventRegistration.eventId");
         mAuth = FirebaseAuth.getInstance();
@@ -78,10 +83,21 @@ public class EventRegistrationActivity extends AppCompatActivity {
 
     private void loadProfilePicture(String uri) {
         StorageReference ref = mStorage.getReferenceFromUrl(uri);
-        GlideApp.with(this)
+        GlideApp.with(getBaseContext())
                 .load(ref)
                 .fitCenter()
                 .into(binding.photo);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+
+        return(super.onOptionsItemSelected(item));
     }
 }
 
