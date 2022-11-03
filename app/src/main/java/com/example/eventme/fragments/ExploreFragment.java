@@ -129,6 +129,7 @@ public class ExploreFragment extends Fragment {
     public void onClickSearchByType(View view) {
         filteredEvents.clear();
         TextView v = (TextView) view;
+        Log.e(TAG, "Type clicked");
         mEventReference.addValueEventListener(
                 new ValueEventListener() {
                     @Override
