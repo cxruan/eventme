@@ -1,6 +1,7 @@
 package com.example.eventme.fragments;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -122,8 +123,10 @@ public class ProfileFragment extends Fragment {
                         Toast.makeText(getContext(), "Error uploading profile picture", Toast.LENGTH_LONG).show();
                     })
                     .addOnSuccessListener(taskSnapshot -> {
-                        mDatabase.getReference().child("users").child(mAuth.getUid()).child("profilePictureURI").setValue(path, (error, reference) -> {
-                            loadProfilePicture(taskSnapshot.getStorage().toString());
+                        String newUri = Uri.decode(taskSnapshot.getStorage().toString());// Has to decode cause getReferenceFromUrl accepts only decoded uri
+
+                        mDatabase.getReference().child("users").child(mAuth.getUid()).child("profilePictureURI").setValue(newUri, (error, reference) -> {
+                            loadProfilePicture(newUri);
                             model.updateUserData(); // Update ViewModel after profile picture uploaded successfully
                             Toast.makeText(getContext(), "Profile picture uploaded successfully", Toast.LENGTH_LONG).show();
                         });
