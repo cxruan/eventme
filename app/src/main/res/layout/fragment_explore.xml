@@ -24,10 +24,11 @@
 
     <Button
         android:id="@+id/searchBtn"
-        android:layout_width="77dp"
-        android:layout_height="54dp"
-        android:layout_marginStart="304dp"
+        android:layout_width="78dp"
+        android:layout_height="44dp"
+        android:layout_marginStart="308dp"
         android:layout_marginTop="104dp"
+        android:background="@drawable/round_button"
         android:paddingLeft="22dp"
         app:icon="@drawable/ic_baseline_search_24"
         app:layout_constraintStart_toStartOf="parent"
@@ -61,10 +62,10 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/searchResults"
-        android:layout_width="381dp"
-        android:layout_height="506dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="204dp"
+        android:layout_width="363dp"
+        android:layout_height="412dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="248dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -97,7 +98,112 @@
         android:layout_marginStart="288dp"
         android:layout_marginTop="160dp"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/resultsNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="224dp"
+        android:text=""
+        android:textColor="@color/grey"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/noResults"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="148dp"
+        android:text="No results..."
+        android:textColor="@color/grey"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteY="416dp" />
+
+    <TextView
+        android:id="@+id/SearchByTypeTitle"
+        android:layout_width="126dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="196dp"
+        android:text="All Categories"
+        android:textColor="@color/black"
+        android:textSize="15dp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.gridlayout.widget.GridLayout
+        android:id="@+id/SearchByTypeGrid"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="240dp"
+        app:columnCount="2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:rowCount="2">
+
+        <TextView
+            android:id="@+id/Arts"
+            android:layout_width="151dp"
+            android:layout_height="152dp"
+            android:background="@drawable/ic_baseline_draw_24"
+            android:text="Art"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/Food_Drinks"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:background="@drawable/ic_baseline_fastfood_24"
+            android:text="Food &amp; Drinks"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/Music"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:background="@drawable/ic_baseline_music_note_24"
+            android:text="Music"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/Outdoors"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:background="@drawable/ic_baseline_wb_sunny_24"
+            android:drawablePadding="10dp"
+            android:text="Outdoors"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.gridlayout.widget.GridLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

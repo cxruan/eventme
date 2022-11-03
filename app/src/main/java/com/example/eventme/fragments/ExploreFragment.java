@@ -27,6 +27,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 
 public class ExploreFragment extends Fragment {
@@ -67,8 +68,25 @@ public class ExploreFragment extends Fragment {
                 R.array.sortBy_array, android.R.layout.simple_spinner_item);
         adapterSort.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.sortBySpinner.setAdapter(adapterSort);
+        mRecycler = binding.searchResults;
+        mRecycler.setLayoutManager(mManager);
+        mRecycler.setAdapter(mEventBoxAdapter);
         binding.searchBar.getText().clear();
+        binding.resultsNumber.setVisibility(View.INVISIBLE);
+        binding.noResults.setVisibility(View.INVISIBLE);
+        binding.SearchByTypeGrid.setVisibility(View.VISIBLE);
+        int childCount = binding.SearchByTypeGrid.getChildCount();
+        for (int i= 0; i < childCount; i++){
+            TextView container = (TextView) binding.SearchByTypeGrid.getChildAt(i);
+            container.setOnClickListener(this::onClickSearchByType);
+        }
         binding.searchBtn.setOnClickListener(this::onClickSearch);
+        binding.SearchByTypeTitle.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View view){
+                binding.searchResults.setVisibility(View.INVISIBLE);
+                binding.SearchByTypeGrid.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     public void onClickSearch(View view) {
@@ -80,16 +98,62 @@ public class ExploreFragment extends Fragment {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         //Get map of users in datasnapshot
+                        binding.SearchByTypeGrid.setVisibility(View.INVISIBLE);
+                        binding.resultsNumber.setVisibility(View.VISIBLE);
+                        binding.noResults.setVisibility(View.INVISIBLE);
                         mEventBoxAdapter.clearAllItem();
                         for(DataSnapshot ds: dataSnapshot.getChildren()){
                             Event event = ds.getValue(Event.class);
+                            Log.d(TAG, event.getName());
                             filteredEvents.add(event);
                         }
-                        mRecycler = binding.searchResults;
-                        mRecycler.setLayoutManager(mManager);
-                        mRecycler.setAdapter(mEventBoxAdapter);
-                        for(Event e: filteredEvents){
-                            mEventBoxAdapter.addItem(e);
+                        if(filteredEvents.size() > 0) {
+                            for (Event e : filteredEvents) {
+                                mEventBoxAdapter.addItem(e);
+                            }
+                            binding.resultsNumber.setText(String.valueOf(filteredEvents.size()) + " results");
+                        }
+                        else {
+                            binding.noResults.setVisibility(View.VISIBLE);
+                            binding.resultsNumber.setText(String.valueOf(filteredEvents.size()) + " results");
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        //handle databaseError
+                    }
+                });
+    }
+
+    public void onClickSearchByType(View view) {
+        filteredEvents.clear();
+        TextView v = (TextView) view;
+        mEventReference.addValueEventListener(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        //Get map of users in datasnapshot
+                        binding.SearchByTypeGrid.setVisibility(View.INVISIBLE);
+                        binding.resultsNumber.setVisibility(View.VISIBLE);
+                        binding.noResults.setVisibility(View.INVISIBLE);
+                        mEventBoxAdapter.clearAllItem();
+                        for(DataSnapshot ds: dataSnapshot.getChildren()){
+                            Event event = ds.getValue(Event.class);
+                            Map<String, Boolean> allTypes = event.getTypes();
+                            if(allTypes.containsKey(v.getText().toString().toLowerCase())){
+                                filteredEvents.add(event);
+                            }
+                        }
+                        if(filteredEvents.size() > 0) {
+                            for (Event e : filteredEvents) {
+                                mEventBoxAdapter.addItem(e);
+                            }
+                            binding.resultsNumber.setText(String.valueOf(filteredEvents.size()) + " results");
+                        }
+                        else {
+                            binding.noResults.setVisibility(View.VISIBLE);
+                            binding.resultsNumber.setText(String.valueOf(filteredEvents.size()) + " results");
                         }
                     }
 
