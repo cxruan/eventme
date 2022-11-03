@@ -62,6 +62,12 @@ dependencies {
     implementation 'com.google.firebase:firebase-database'
     // Firebase Authentication
     implementation 'com.google.firebase:firebase-auth'
+    // Firebase Storage
+    implementation 'com.google.firebase:firebase-storage'
+    // FirebaseUI Storage
+    implementation 'com.firebaseui:firebase-ui-storage:7.2.0'
+    implementation 'com.github.bumptech.glide:glide:4.14.2'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.14.2'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
