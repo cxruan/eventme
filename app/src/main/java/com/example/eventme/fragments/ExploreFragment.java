@@ -68,9 +68,6 @@ public class ExploreFragment extends Fragment {
                 R.array.sortBy_array, android.R.layout.simple_spinner_item);
         adapterSort.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.sortBySpinner.setAdapter(adapterSort);
-        mRecycler = binding.searchResults;
-        mRecycler.setLayoutManager(mManager);
-        mRecycler.setAdapter(mEventBoxAdapter);
         binding.searchBar.getText().clear();
         binding.resultsNumber.setVisibility(View.INVISIBLE);
         binding.noResults.setVisibility(View.INVISIBLE);
@@ -107,6 +104,9 @@ public class ExploreFragment extends Fragment {
                             Log.d(TAG, event.getName());
                             filteredEvents.add(event);
                         }
+                        mRecycler = binding.searchResults;
+                        mRecycler.setLayoutManager(mManager);
+                        mRecycler.setAdapter(mEventBoxAdapter);
                         if(filteredEvents.size() > 0) {
                             for (Event e : filteredEvents) {
                                 mEventBoxAdapter.addItem(e);
@@ -130,7 +130,7 @@ public class ExploreFragment extends Fragment {
         filteredEvents.clear();
         TextView v = (TextView) view;
         Log.e(TAG, "Type clicked");
-        mEventReference.addValueEventListener(
+        mEventReference.addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -146,6 +146,9 @@ public class ExploreFragment extends Fragment {
                                 filteredEvents.add(event);
                             }
                         }
+                        mRecycler = binding.searchResults;
+                        mRecycler.setLayoutManager(mManager);
+                        mRecycler.setAdapter(mEventBoxAdapter);
                         if(filteredEvents.size() > 0) {
                             for (Event e : filteredEvents) {
                                 mEventBoxAdapter.addItem(e);
