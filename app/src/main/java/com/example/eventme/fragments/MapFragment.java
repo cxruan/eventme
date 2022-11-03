@@ -1,43 +1,57 @@
 package com.example.eventme.fragments;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.eventme.R;
 import com.example.eventme.databinding.FragmentMapBinding;
 import com.example.eventme.models.Event;
+import com.example.eventme.viewmodels.MapFragmentViewModel;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.GenericTypeIndicator;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback {
+
+    private static final String TAG = "MapFragment";
+    private static final Integer DEFAULT_ZOOM_LEVEL = 15;
+
     private FragmentMapBinding binding;
 
-    private DatabaseReference mDatabase;
+    private FirebaseDatabase mDatabase;
     private FirebaseAuth mAuth;
-    private ArrayList<Event> allEvents = new ArrayList<>();
+    private GoogleMap mMap;
+    private UiSettings mUiSettings;
+    private MapFragmentViewModel mViewModel;
 
-
-
+    private ActivityResultLauncher<String[]> requestPermissionLauncher;
 
     @Nullable
     @Override
@@ -45,74 +59,101 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         binding = FragmentMapBinding.inflate(inflater, container, false);
 
         // Initialize map fragment
-        SupportMapFragment mapFragment=(SupportMapFragment)
-                getChildFragmentManager().findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         return binding.getRoot();
-
-    }
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        getAllEvents(googleMap);
-        for(Event event : allEvents) {
-
-            System.out.println(event.getGeoLocation());
-
-        }
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mDatabase = FirebaseDatabase.getInstance().getReference().child("events");
+
+        mDatabase = FirebaseDatabase.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
+        // Binding view model
+        mViewModel = new ViewModelProvider(requireActivity()).get(MapFragmentViewModel.class);
 
+        // Permission request dialogue callback
+        requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+            Boolean fineLocationGranted = result.get(Manifest.permission.ACCESS_FINE_LOCATION);
+            Boolean coarseLocationGranted = result.get(Manifest.permission.ACCESS_COARSE_LOCATION);
+
+            if (fineLocationGranted != null || coarseLocationGranted != null) {
+                // location access granted.
+                enableMyLocation();
+                loadMapData();
+            }
+        });
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        mUiSettings = mMap.getUiSettings();
+        mUiSettings.setZoomControlsEnabled(true);
+        mUiSettings.setMapToolbarEnabled(false);
+        enableMyLocation();
+
+        if (isLocationPermissionGranted())
+            loadMapData();
     }
 
 
-    public void getAllEvents(GoogleMap googleMap){
-        mDatabase.addListenerForSingleValueEvent(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        //Get map of users in datasnapshot
-                        GenericTypeIndicator<ArrayList<Event>> t = new GenericTypeIndicator<ArrayList<Event>>() {};
-                        for(DataSnapshot ds: dataSnapshot.getChildren()){
-                            Event event = ds.getValue(Event.class);
-                            allEvents.add(event);
-                        }
-                        LatLng lastLatLng = new LatLng(0, 0);
-                        System.out.println("yeahyeahyea");
-                        for(Event event : allEvents){
-                            double eventLon = event.getGeoLocation().get("lng");
-                            double eventLat = event.getGeoLocation().get("lat");
+    private void loadMapData() {
+        try {
+            FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+            fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                LatLng coordinate = new LatLng(location.getLatitude(), location.getLongitude());
 
-                            googleMap.addMarker(new MarkerOptions()
-                                    .position(new LatLng(eventLat, eventLon))
-                                    .title(event.getName()));
-                            lastLatLng = new LatLng(eventLat, eventLon);
-                            System.out.println(event.getName());
-                            System.out.println(eventLon);
-                            System.out.println(eventLat);
-                        }
-                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lastLatLng,20));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, DEFAULT_ZOOM_LEVEL));
+
+                mViewModel.getEventsData().observe(getViewLifecycleOwner(), events -> {
+                    for (Event event : events) {
+                        double eventLon = event.getGeoLocation().get("lng");
+                        double eventLat = event.getGeoLocation().get("lat");
+
+                        mMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(eventLat, eventLon))
+                                .title(event.getName()));
                     }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        //handle databaseError
-                    }
                 });
+            });
+        } catch (SecurityException e) {
+            Log.e("Exception: %s", e.getMessage(), e);
+        }
+
     }
 
+    private void enableMyLocation() {
+        try {
+            // 1. Check if permissions are granted, if so, enable the my location layer
+            if (isLocationPermissionGranted()) {
+                mMap.setMyLocationEnabled(true);
+                return;
+            }
 
+            // 2. Otherwise, request location permissions from the user.
+            requestPermissionLauncher.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        } catch (SecurityException e) {
+            Log.e("Exception: %s", e.getMessage(), e);
+        }
+    }
 
-    public void isWithinDistance(int kilometers, double currentLon, double currentLat){
-        System.out.println("yeahyeahyeah");
+    private boolean isLocationPermissionGranted() {
+        return ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public List<Event> filterWithinDistance(int kilometers, double currentLon, double currentLat, List<Event> events) {
         ArrayList<Event> eventsInDistance = new ArrayList<>();
-        for(Event event : allEvents){
+        for (Event event : events) {
             double eventLon = event.getGeoLocation().get("lng");
             double eventLat = event.getGeoLocation().get("lat");
 
@@ -129,12 +170,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             double rad = 6371;
             double c = 2 * Math.asin(Math.sqrt(a));
             double distance = rad * c;
+
             System.out.println(event.getName());
             System.out.println(distance);
-            if (distance < kilometers){
+
+            if (distance < kilometers) {
                 eventsInDistance.add(event);
             }
         }
-        allEvents = eventsInDistance;
+        return eventsInDistance;
     }
 }

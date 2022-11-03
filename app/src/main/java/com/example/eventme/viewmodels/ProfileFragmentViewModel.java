@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProfileFragmentViewModel extends ViewModel {
-    private static final String TAG = "ProfileFragmentViewModel";
+    private static final String TAG = "ProfileFragViewModel";
 
     private FirebaseAuth mAuth;
     private FirebaseDatabase mDatabase;
