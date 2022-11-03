@@ -16,6 +16,8 @@ public class Event {
     private String time;
     private String location;
     private String sponsor;
+    private Boolean parkingAvailable;
+    private String photoURI;
     private Map<String, Double> geoLocation = new HashMap<>();
     private Map<String, Boolean> registeredUsers = new HashMap<>();
 
@@ -57,6 +59,14 @@ public class Event {
 
     public String getSponsor() {
         return sponsor;
+    }
+
+    public Boolean getParkingAvailable() {
+        return parkingAvailable;
+    }
+
+    public String getPhotoURI() {
+        return photoURI;
     }
 
     public Map<String, Double> getGeoLocation() {
