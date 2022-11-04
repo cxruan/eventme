@@ -7,6 +7,7 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,6 +35,7 @@ import com.example.eventme.models.Event;
 import com.example.eventme.viewmodels.MapFragmentViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -46,7 +48,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.PriorityQueue;
 
 // TODO: Filter events given user's current location
 public class MapFragment extends Fragment implements
@@ -56,8 +60,9 @@ public class MapFragment extends Fragment implements
 
     private static final String TAG = "MapFragment";
     private static final Integer DEFAULT_ZOOM_LEVEL = 15;
-    private static final Integer EVENT_LIST_CARD_OFFSET_DP= 85;
-    private static final Integer EVENT_LIST_CARD_RADIUS_DP= 20;
+    private static final Integer EVENT_LIST_CARD_OFFSET_DP = 85;
+    private static final Integer EVENT_LIST_CARD_RADIUS_DP = 20;
+    private static final Integer SHOW_EVENTS_IN_KM = 5;
 
     private FragmentMapBinding binding;
 
@@ -206,16 +211,37 @@ public class MapFragment extends Fragment implements
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, DEFAULT_ZOOM_LEVEL));
 
                 mViewModel.getEventsData().observe(getViewLifecycleOwner(), events -> {
+
+                    PriorityQueue<Event> queue = new PriorityQueue<>((e1, e2) -> {
+                            double d1 = distanceBetweenLocations(coordinate.latitude, coordinate.longitude, e1.getGeoLocation().get("lat"), e1.getGeoLocation().get("lng"));
+                            double d2 = distanceBetweenLocations(coordinate.latitude, coordinate.longitude, e2.getGeoLocation().get("lat"), e2.getGeoLocation().get("lng"));
+
+                            if (d1 < d2)
+                                return -1;
+                            if (d1 > d2)
+                                return 1;
+                            return 0;
+                    });
+
                     for (Event event : events.values()) {
                         double eventLon = event.getGeoLocation().get("lng");
                         double eventLat = event.getGeoLocation().get("lat");
 
-                        Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(eventLat, eventLon)));
-                        marker.setTag(event.getEventId());
+                        double distance = distanceBetweenLocations(coordinate.latitude, coordinate.longitude, eventLat, eventLon);
+                        Log.d(TAG, String.format("loadMapData: event %s diff %f", event.getName(), distance));
+
+                        if (distance < SHOW_EVENTS_IN_KM) {
+                            queue.add(event);
+                            Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(eventLat, eventLon)));
+                            marker.setTag(event.getEventId());
+                        }
+                    }
+                    List<Event> orderedQueue= new ArrayList<>();
+                    while (!queue.isEmpty()) {
+                        orderedQueue.add(queue.poll());
                     }
 
-                    List<Event> orderedEvents = new ArrayList<>(events.values());
-                    mEventBoxAdapter.setItems(orderedEvents);
+                    mEventBoxAdapter.setItems(orderedQueue);
                 });
             });
         } catch (SecurityException e) {
@@ -247,7 +273,24 @@ public class MapFragment extends Fragment implements
                 || ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
-    public List<Event> filterWithinDistance(int kilometers, double currentLon, double currentLat, List<Event> events) {
+    private double distanceBetweenLocations(double lat1, double lng1, double lat2, double lng2) {
+        double dLat = Math.toRadians(lat1 - lat2);
+        double dLon = Math.toRadians(lng1 - lng2);
+
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
+
+        double a = Math.pow(Math.sin(dLat / 2), 2) +
+                Math.pow(Math.sin(dLon / 2), 2) *
+                        Math.cos(lat1) *
+                        Math.cos(lat2);
+        double rad = 6371;
+        double c = 2 * Math.asin(Math.sqrt(a));
+
+        return rad * c;
+    }
+
+    private List<Event> filterWithinDistance(int kilometers, double currentLon, double currentLat, List<Event> events) {
         ArrayList<Event> eventsInDistance = new ArrayList<>();
         for (Event event : events) {
             double eventLon = event.getGeoLocation().get("lng");
