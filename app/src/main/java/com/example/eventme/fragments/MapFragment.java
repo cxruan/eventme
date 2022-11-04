@@ -4,11 +4,13 @@ import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -21,6 +23,8 @@ import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventme.EventRegistrationActivity;
 import com.example.eventme.R;
@@ -44,6 +48,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO: Filter events given user's current location
 public class MapFragment extends Fragment implements
         OnMapReadyCallback,
         GoogleMap.OnMarkerClickListener,
@@ -51,6 +56,8 @@ public class MapFragment extends Fragment implements
 
     private static final String TAG = "MapFragment";
     private static final Integer DEFAULT_ZOOM_LEVEL = 15;
+    private static final Integer EVENT_LIST_CARD_OFFSET_DP= 85;
+    private static final Integer EVENT_LIST_CARD_RADIUS_DP= 20;
 
     private FragmentMapBinding binding;
 
@@ -62,13 +69,66 @@ public class MapFragment extends Fragment implements
 
     private ActivityResultLauncher<String[]> requestPermissionLauncher;
     private CardView mEventBoxView;
+    private EventBoxAdapter mEventBoxAdapter;
+    private LinearLayoutManager mManager;
+    RecyclerView mRecycler;
 
+    private float pxInDp, dY, startY, initialY = 0;
+
+    @SuppressLint("ClickableViewAccessibility")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentMapBinding.inflate(inflater, container, false);
 
         mEventBoxView = binding.eventBox.getRoot();
+        mEventBoxView.setVisibility(View.INVISIBLE);
+
+        pxInDp = getResources().getDisplayMetrics().density;
+        // Set up event list card swiping animation
+        binding.eventListCard.setOnTouchListener((vw, event) -> {
+            CardView view = (CardView) vw;
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    startY = view.getY();
+                    if (initialY == 0) // record card's initial y
+                        initialY = startY;
+                    dY = view.getY() - event.getRawY();
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    if (event.getRawY() + dY < 0 || event.getRawY() + dY > initialY)
+                        return true;
+                    view.animate()
+                            .y(event.getRawY() + dY)
+                            .setDuration(0)
+                            .start();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    float offsetY = event.getRawY() + dY - startY;
+                    if (offsetY > 300) { // Swiping down
+                        view.animate()
+                                .y(initialY)
+                                .setDuration(300)
+                                .start();
+                        view.setRadius(EVENT_LIST_CARD_RADIUS_DP * pxInDp);
+                    } else if (offsetY < -300) { // Swiping up
+                        view.animate()
+                                .y(0)
+                                .setDuration(300)
+                                .start();
+                        view.setRadius(0);
+                    } else {
+                        view.animate()
+                                .y(startY)
+                                .setDuration(300)
+                                .start();
+                    }
+                    break;
+                default:
+                    return false;
+            }
+            return true;
+        });
 
         // Initialize map fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
@@ -86,6 +146,22 @@ public class MapFragment extends Fragment implements
 
         // Binding view model
         mViewModel = new ViewModelProvider(requireActivity()).get(MapFragmentViewModel.class);
+
+        // Set up Adapter
+        mEventBoxAdapter = new EventBoxAdapter();
+        mEventBoxAdapter.setOnItemClickListener((position, v) -> {
+            // Pass eventId to Registration activity when clicking event box
+            Event event = mEventBoxAdapter.getItemByPos(position);
+            Intent intent = new Intent(requireActivity(), EventRegistrationActivity.class);
+            intent.putExtra("com.example.eventme.EventRegistration.eventId", event.getEventId());
+            startActivity(intent);
+        });
+
+        // Set up RecyclerView
+        mManager = new LinearLayoutManager(getActivity());
+        mRecycler = binding.eventList;
+        mRecycler.setLayoutManager(mManager);
+        mRecycler.setAdapter(mEventBoxAdapter);
 
         // Permission request dialogue callback
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
@@ -107,6 +183,7 @@ public class MapFragment extends Fragment implements
         mUiSettings = mMap.getUiSettings();
         mUiSettings.setZoomControlsEnabled(true);
         mUiSettings.setMapToolbarEnabled(false);
+        mMap.setPadding(0, 0, 0, Math.round(EVENT_LIST_CARD_OFFSET_DP * pxInDp));
         enableMyLocation();
 
         if (isLocationPermissionGranted())
@@ -136,6 +213,9 @@ public class MapFragment extends Fragment implements
                         Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(eventLat, eventLon)));
                         marker.setTag(event.getEventId());
                     }
+
+                    List<Event> orderedEvents = new ArrayList<>(events.values());
+                    mEventBoxAdapter.setItems(orderedEvents);
                 });
             });
         } catch (SecurityException e) {
@@ -231,10 +311,10 @@ public class MapFragment extends Fragment implements
 
                 // Animate
                 ObjectAnimator animation = ObjectAnimator.ofFloat(mEventBoxView, "translationY", mEventBoxView.getMeasuredHeight() + 100, 0f);
-                animation.setDuration(500);
+                animation.setDuration(300);
                 animation.start();
 
-                mMap.setPadding(0, 0, 0, mEventBoxView.getMeasuredHeight() + 50); // Set Google Map control position
+                mMap.setPadding(0, 0, 0, mEventBoxView.getMeasuredHeight() + Math.round(EVENT_LIST_CARD_OFFSET_DP * pxInDp)); // Set Google Map control position
             }
         });
     }
@@ -242,13 +322,13 @@ public class MapFragment extends Fragment implements
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
         // Animate
-        ObjectAnimator animation = ObjectAnimator.ofFloat(mEventBoxView, "translationY", 0f, 200 * getResources().getDisplayMetrics().density);
+        ObjectAnimator animation = ObjectAnimator.ofFloat(mEventBoxView, "translationY", 0f, 200 * pxInDp);
         animation.setDuration(300);
         animation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animator) {
                 mEventBoxView.setVisibility(View.INVISIBLE);
-                mMap.setPadding(0, 0, 0, 0); // Set Google Map control position
+                mMap.setPadding(0, 0, 0, Math.round(EVENT_LIST_CARD_OFFSET_DP * pxInDp)); // Set Google Map control position
             }
         });
         animation.start();
