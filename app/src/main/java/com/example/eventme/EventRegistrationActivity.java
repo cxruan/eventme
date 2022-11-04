@@ -17,6 +17,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+// TODO: Event registration and un-registration
 public class EventRegistrationActivity extends AppCompatActivity {
     private static final String TAG = "EventRegistrationActivity";
 
