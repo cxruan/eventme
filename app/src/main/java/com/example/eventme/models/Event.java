@@ -2,6 +2,9 @@ package com.example.eventme.models;
 
 import static com.example.eventme.utils.Utils.distanceBetweenLocations;
 
+import android.util.Log;
+
+import com.example.eventme.utils.Utils;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.Comparator;
@@ -78,6 +81,46 @@ public class Event {
 
     public Map<String, Boolean> getRegisteredUsers() {
         return registeredUsers;
+    }
+
+    public static boolean checkTimeConflict(Event e1, Event e2) {
+        if (!e1.getDate().equals(e2.getDate()))
+            return false;
+
+        Integer[] time1 = Utils.parseTime(e1.getTime());
+        Integer[] time2 = Utils.parseTime(e2.getTime());
+        Log.d("Event", String.format("checkTimeConflict: %d:%d-%d:%d %d:%d-%d:%d", time1[0], time1[1], time1[2], time1[3], time2[0], time2[1], time2[2], time2[3]));
+
+        Integer startHour1, startMin1, endHour1, endMin1;
+        Integer startHour2, startMin2, endHour2, endMin2;
+
+        if (time1[0] < time2[0]) {
+            startHour1 = time1[0];
+            startMin1 = time1[1];
+            endHour1 = time1[2];
+            endMin1 = time1[3];
+            startHour2 = time2[0];
+            startMin2 = time2[1];
+            endHour2 = time2[2];
+            endMin2 = time2[3];
+        } else {
+            startHour1 = time2[0];
+            startMin1 = time2[1];
+            endHour1 = time2[2];
+            endMin1 = time2[3];
+            startHour2 = time1[0];
+            startMin2 = time1[1];
+            endHour2 = time1[2];
+            endMin2 = time1[3];
+        }
+
+        if(endHour1 > startHour2)
+            return true;
+        if(endHour1 == startHour2 && endMin1 >= startMin2)
+            return true;
+
+
+        return false;
     }
 
     public static class EventNameComparator implements Comparator<Event> {

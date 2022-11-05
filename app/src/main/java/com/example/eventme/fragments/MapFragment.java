@@ -48,7 +48,6 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.PriorityQueue;
 
 // TODO: Filter events given user's current location
 public class MapFragment extends Fragment implements
@@ -150,6 +149,7 @@ public class MapFragment extends Fragment implements
                 LatLng coordinate = new LatLng(location.getLatitude(), location.getLongitude());
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, DEFAULT_ZOOM_LEVEL));
 
+                mViewModel.loadAllData();
                 mViewModel.getEventsData().observe(getViewLifecycleOwner(), events -> {
                     List<Event> orderedList = new ArrayList<>();
 
@@ -166,7 +166,6 @@ public class MapFragment extends Fragment implements
                     }
 
                     orderedList.sort(new Event.EventDistanceComparator(coordinate.latitude, coordinate.longitude));
-
                     mListViewModel.setEventsData(orderedList);
                 });
             });

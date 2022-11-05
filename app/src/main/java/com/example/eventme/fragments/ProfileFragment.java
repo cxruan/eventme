@@ -44,6 +44,7 @@ public class ProfileFragment extends Fragment {
     private LinearLayoutManager mManager;
     private EventBoxAdapter mEventBoxAdapter;
     ActivityResultLauncher<String> mGetContent;
+    ProfileFragmentViewModel mViewModel;
 
     @Nullable
     @Override
@@ -87,8 +88,8 @@ public class ProfileFragment extends Fragment {
         binding.infoRow.setVisibility(View.INVISIBLE);
 
         // Subscribe to ViewModel data
-        ProfileFragmentViewModel model = new ViewModelProvider(requireActivity()).get(ProfileFragmentViewModel.class);
-        model.getUserData().observe(getViewLifecycleOwner(), user -> {
+        mViewModel = new ViewModelProvider(requireActivity()).get(ProfileFragmentViewModel.class);
+        mViewModel.getUserData().observe(getViewLifecycleOwner(), user -> {
             binding.name.setText(user.getFirstName() + " " + user.getLastName());
             binding.birthday.setText(user.getBirthday());
             binding.email.setText(user.getEmail());
@@ -102,7 +103,7 @@ public class ProfileFragment extends Fragment {
             else // No profile picture, use default person drawable
                 binding.profilePic.setImageResource(R.drawable.ic_baseline_person_24);
         });
-        model.getRegisteredEventsData().observe(getViewLifecycleOwner(), events -> {
+        mViewModel.getRegisteredEventsData().observe(getViewLifecycleOwner(), events -> {
             mEventBoxAdapter.setItems(events);
         });
 
@@ -127,7 +128,7 @@ public class ProfileFragment extends Fragment {
 
                         mDatabase.getReference().child("users").child(mAuth.getUid()).child("profilePictureURI").setValue(newUri, (error, reference) -> {
                             loadProfilePicture(newUri);
-                            model.updateUserData(); // Update ViewModel after profile picture uploaded successfully
+                            mViewModel.updateUserData(); // Update ViewModel after profile picture uploaded successfully
                             Toast.makeText(getContext(), "Profile picture uploaded successfully", Toast.LENGTH_LONG).show();
                         });
                     });
@@ -138,6 +139,12 @@ public class ProfileFragment extends Fragment {
         binding.profilePic.setOnClickListener(this::onClickUploadProfilePic);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        mViewModel.loadAllData();
+    }
 
     private void loadProfilePicture(String uri) {
         StorageReference ref = mStorage.getReferenceFromUrl(uri);
