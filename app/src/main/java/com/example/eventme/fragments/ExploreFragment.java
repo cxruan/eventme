@@ -1,6 +1,7 @@
 package com.example.eventme.fragments;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
@@ -15,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.eventme.EventRegistrationActivity;
 import com.example.eventme.adapters.EventBoxAdapter;
 import com.example.eventme.databinding.FragmentExploreBinding;
 import com.example.eventme.R;
@@ -60,6 +62,13 @@ public class ExploreFragment extends Fragment {
         mEventReference = FirebaseDatabase.getInstance().getReference().child("events");
 
         mEventBoxAdapter = new EventBoxAdapter();
+        mEventBoxAdapter.setOnItemClickListener((position, v) -> {
+            // Pass eventId to Registration activity when clicking event box
+            Event event = mEventBoxAdapter.getItemByPos(position);
+            Intent intent = new Intent(requireActivity(), EventRegistrationActivity.class);
+            intent.putExtra("com.example.eventme.EventRegistration.eventId", event.getEventId());
+            startActivity(intent);
+        });
 
         // Set up Layout Manager
         mManager = new LinearLayoutManager(getActivity());
