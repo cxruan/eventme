@@ -3,6 +3,7 @@ package com.example.eventme.fragments;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 
@@ -60,6 +63,9 @@ public class ExploreFragment extends Fragment {
 
         // Set up Layout Manager
         mManager = new LinearLayoutManager(getActivity());
+        mRecycler = binding.searchResults;
+        mRecycler.setLayoutManager(mManager);
+        mRecycler.setAdapter(mEventBoxAdapter);
         ArrayAdapter<CharSequence> adapterSearch = ArrayAdapter.createFromResource(getContext(),
                 R.array.searchBy_array, android.R.layout.simple_spinner_item);
         adapterSearch.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -80,8 +86,10 @@ public class ExploreFragment extends Fragment {
         binding.searchBtn.setOnClickListener(this::onClickSearch);
         binding.SearchByTypeTitle.setOnClickListener(new View.OnClickListener(){
             public void onClick(View view){
-                binding.searchResults.setVisibility(View.INVISIBLE);
                 binding.SearchByTypeGrid.setVisibility(View.VISIBLE);
+                mEventBoxAdapter.clearAllItem();
+                binding.resultsNumber.setVisibility(View.INVISIBLE);
+                binding.noResults.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -104,9 +112,7 @@ public class ExploreFragment extends Fragment {
                             Log.d(TAG, event.getName());
                             filteredEvents.add(event);
                         }
-                        mRecycler = binding.searchResults;
-                        mRecycler.setLayoutManager(mManager);
-                        mRecycler.setAdapter(mEventBoxAdapter);
+                        sortEvents();
                         if(filteredEvents.size() > 0) {
                             for (Event e : filteredEvents) {
                                 mEventBoxAdapter.addItem(e);
@@ -146,9 +152,7 @@ public class ExploreFragment extends Fragment {
                                 filteredEvents.add(event);
                             }
                         }
-                        mRecycler = binding.searchResults;
-                        mRecycler.setLayoutManager(mManager);
-                        mRecycler.setAdapter(mEventBoxAdapter);
+                        sortEvents();
                         if(filteredEvents.size() > 0) {
                             for (Event e : filteredEvents) {
                                 mEventBoxAdapter.addItem(e);
@@ -166,6 +170,32 @@ public class ExploreFragment extends Fragment {
                         //handle databaseError
                     }
                 });
+    }
+
+    private void sortEvents(){
+        if(binding.sortBySpinner.getSelectedItem().toString().equals("Cost")){
+            filteredEvents.sort(new Comparator<Event>() {
+                @Override
+                public int compare(Event lhs, Event rhs) {
+
+                    return lhs.getCost() < rhs.getCost() ? -1 : (lhs.getCost() > rhs.getCost()) ? 1 : 0;
+                }
+            });
+        } else if(binding.sortBySpinner.getSelectedItem().toString().equals("Date")){
+            filteredEvents.sort(new Comparator<Event>() {
+                @Override
+                public int compare(Event lhs, Event rhs) {
+                    // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
+                    if(lhs.getDate().compareTo(rhs.getDate()) >= 1){
+                        return 1;
+                    } else if(lhs.getDate().compareTo(rhs.getDate()) <= -1){
+                        return -1;
+                    } else {
+                        return 0;
+                    }
+                }
+            });
+        }
     }
 
 
