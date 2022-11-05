@@ -53,8 +53,9 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
     }
 
     public void setItems(List<Event> events) {
+        int oldSize = mEvents.size();
         mEvents = events;
-        notifyItemRangeChanged(0, mEvents.size());
+        notifyItemRangeChanged(0, Math.max(oldSize, mEvents.size()));
     }
 
     public void clearAllItem() {
