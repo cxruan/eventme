@@ -67,6 +67,10 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
         return mEvents.get(position);
     }
 
+    public List<Event> getAllItems() {
+        return mEvents;
+    }
+
     public void setOnItemClickListener(ClickListener clickListener) {
         EventBoxAdapter.clickListener = clickListener;
     }
