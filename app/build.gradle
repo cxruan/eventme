@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.eventme"
-        minSdk 21
+        minSdk 24
         targetSdk 32
         versionCode 1
         versionName "1.0"
@@ -35,6 +35,7 @@ android {
 }
 
 dependencies {
+    implementation 'com.google.android.gms:play-services-location:21.0.0'
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
     implementation 'androidx.annotation:annotation:1.3.0'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'

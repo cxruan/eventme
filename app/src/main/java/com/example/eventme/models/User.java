@@ -12,7 +12,7 @@ public class User {
     private String lastName;
     private String email;
     private String birthday;
-    private String profilePicture;
+    private String profilePictureURI;
     private Map<String, Boolean>  registeredEvents = new HashMap<>();
 
     public User() {
@@ -50,8 +50,8 @@ public class User {
     }
 
 
-    public String getProfilePicture() {
-        return profilePicture;
+    public String getProfilePictureURI() {
+        return profilePictureURI;
     }
 
     public Map<String, Boolean> getRegisteredEvents() {
