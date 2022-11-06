@@ -22,7 +22,6 @@
         <item>Name</item>
         <item>Location</item>
         <item>Sponsor</item>
-        <item>Type</item>
     </string-array>
     <string-array name="sortBy_array">
         <item>Alphabetical</item>
