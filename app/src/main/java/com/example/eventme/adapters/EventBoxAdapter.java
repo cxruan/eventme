@@ -76,7 +76,6 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
         EventBoxAdapter.clickListener = clickListener;
     }
 
-    // TODO: Add types
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public TextView nameView;
         public TextView costView;

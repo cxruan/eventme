@@ -29,7 +29,6 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Calendar;
 
-// TODO: Add birthday
 public class SignUpFragment extends Fragment {
     private static final String TAG = "SignUpFragment";
 

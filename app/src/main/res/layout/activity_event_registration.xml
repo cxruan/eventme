@@ -11,8 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
@@ -219,6 +219,14 @@
                     app:layout_constraintStart_toEndOf="@id/peopleIcon"
                     app:layout_constraintTop_toBottomOf="@id/parkingIcon" />
 
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/types"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/people">
+                </com.google.android.material.chip.ChipGroup>
+
                 <TextView
                     android:id="@+id/peopleRegistered"
                     android:layout_width="wrap_content"
@@ -234,13 +242,13 @@
                     android:id="@+id/about"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginTop="8dp"
                     android:text="About this event"
                     android:textColor="@color/black"
                     android:textSize="24dp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/peopleIcon" />
+                    app:layout_constraintTop_toBottomOf="@id/types" />
 
                 <TextView
                     android:id="@+id/description"

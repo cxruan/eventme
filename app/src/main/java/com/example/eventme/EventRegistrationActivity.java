@@ -16,6 +16,7 @@ import com.example.eventme.models.Event;
 import com.example.eventme.models.User;
 import com.example.eventme.utils.GlideApp;
 import com.example.eventme.utils.Utils;
+import com.google.android.material.chip.Chip;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -121,6 +122,12 @@ public class EventRegistrationActivity extends AppCompatActivity {
                 } else {
                     binding.button.setText("Register");
                     binding.button.setOnClickListener(this::onClickRegister);
+                }
+
+                for (String type : mEvent.getTypes().keySet()) {
+                    Chip chip = new Chip(this);
+                    chip.setText(type);
+                    binding.types.addView(chip);
                 }
             } else {
                 Log.e(TAG, "Error getting event data", task.getException());

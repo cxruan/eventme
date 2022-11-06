@@ -143,7 +143,8 @@ public class ProfileFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        mViewModel.loadAllData();
+        if (mViewModel != null)
+            mViewModel.loadAllData();
     }
 
     private void loadProfilePicture(String uri) {
