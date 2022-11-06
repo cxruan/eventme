@@ -1,7 +1,9 @@
 package com.example.eventme.fragments;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
@@ -30,6 +32,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +49,9 @@ public class ExploreFragment extends Fragment {
     private FragmentExploreBinding binding;
 
     private ArrayList<Event> filteredEvents = new ArrayList<Event>();
+    private String startDate;
+    private String endDate;
+
 
     @Nullable
     @Override
@@ -101,6 +107,59 @@ public class ExploreFragment extends Fragment {
                 binding.noResults.setVisibility(View.INVISIBLE);
             }
         });
+
+        binding.startDate.setPaintFlags(binding.startDate.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        binding.endDate.setPaintFlags(binding.endDate.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        final Calendar calendar = Calendar.getInstance();
+        final int year = calendar.get(Calendar.YEAR);
+        final int month = calendar.get(Calendar.MONTH);
+        final int day = calendar.get(Calendar.DAY_OF_MONTH);
+        calendar.set(year, month, day);
+        binding.startDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DatePickerDialog dialog = new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                        i1 += 1;
+                        startDate = i + "/";
+                        if(i1 < 10) startDate += "0";
+                        startDate += i1 + "/";
+                        if(i2 < 10) startDate += "0";
+                        startDate += i2;
+                        binding.startDate.setHint(startDate);
+                    }
+                }, year, month, day);
+                long minDate = calendar.getTimeInMillis();
+                dialog.getDatePicker().setMinDate(minDate);
+                dialog.show();
+            }
+        });
+
+        startDate = "";
+        endDate = "";
+        binding.endDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DatePickerDialog dialog = new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker daePicker, int i, int i1, int i2) {
+                        i1 += 1;
+                        endDate = i + "/";
+                        if(i1 < 10) endDate += "0";
+                        endDate += i1 + "/";
+                        if(i2 < 10) endDate += "0";
+                        endDate += i2;
+                        binding.endDate.setHint(endDate);
+                    }
+                }, year, month, day);
+                long minDate = calendar.getTimeInMillis();
+                dialog.getDatePicker().setMinDate(minDate);
+                dialog.show();
+            }
+        });
+
+
     }
 
     public void onClickSearch(View view) {
@@ -116,19 +175,32 @@ public class ExploreFragment extends Fragment {
                         binding.resultsNumber.setVisibility(View.VISIBLE);
                         binding.noResults.setVisibility(View.INVISIBLE);
                         mEventBoxAdapter.clearAllItem();
-                        for(DataSnapshot ds: dataSnapshot.getChildren()){
+                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
                             Event event = ds.getValue(Event.class);
                             Log.d(TAG, event.getName());
-                            filteredEvents.add(event);
+                            if(startDate.compareTo("") != 0 && endDate.compareTo("") != 0){
+                                if(event.getDate().compareTo(startDate) >= 0 && event.getDate().compareTo(endDate) <= 0){
+                                    filteredEvents.add(event);
+                                }
+                            } else if (startDate.compareTo("") != 0 && endDate.compareTo("") == 0){
+                                if(event.getDate().compareTo(startDate) >= 0){
+                                    filteredEvents.add(event);
+                                }
+                            } else if (startDate.compareTo("") == 0 && endDate.compareTo("") != 0){
+                                if(event.getDate().compareTo(endDate) <= 0){
+                                    filteredEvents.add(event);
+                                }
+                            } else {
+                                filteredEvents.add(event);
+                            }
                         }
                         sortEvents();
-                        if(filteredEvents.size() > 0) {
+                        if (filteredEvents.size() > 0) {
                             for (Event e : filteredEvents) {
                                 mEventBoxAdapter.addItem(e);
                             }
                             binding.resultsNumber.setText(String.valueOf(filteredEvents.size()) + " results");
-                        }
-                        else {
+                        } else {
                             binding.noResults.setVisibility(View.VISIBLE);
                             binding.resultsNumber.setText(String.valueOf(filteredEvents.size()) + " results");
                         }
@@ -158,7 +230,21 @@ public class ExploreFragment extends Fragment {
                             Event event = ds.getValue(Event.class);
                             Map<String, Boolean> allTypes = event.getTypes();
                             if(allTypes.containsKey(v.getText().toString().toLowerCase())){
-                                filteredEvents.add(event);
+                                if(startDate.compareTo("") != 0 && endDate.compareTo("") != 0){
+                                    if(event.getDate().compareTo(startDate) >= 0 && event.getDate().compareTo(endDate) <= 0){
+                                        filteredEvents.add(event);
+                                    }
+                                } else if (startDate.compareTo("") != 0 && endDate.compareTo("") == 0){
+                                    if(event.getDate().compareTo(startDate) >= 0){
+                                        filteredEvents.add(event);
+                                    }
+                                } else if (startDate.compareTo("") == 0 && endDate.compareTo("") != 0){
+                                    if(event.getDate().compareTo(endDate) <= 0){
+                                        filteredEvents.add(event);
+                                    }
+                                } else {
+                                    filteredEvents.add(event);
+                                }
                             }
                         }
                         sortEvents();
