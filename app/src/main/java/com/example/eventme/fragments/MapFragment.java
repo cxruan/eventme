@@ -49,7 +49,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: Filter events given user's current location
 public class MapFragment extends Fragment implements
         OnMapReadyCallback,
         GoogleMap.OnMarkerClickListener,
@@ -183,7 +182,7 @@ public class MapFragment extends Fragment implements
                 return;
             }
 
-            // 2. Otherwise, request location permissions from the user.
+            // 2. Otherwise, request location permissions from the user.œœ
             requestPermissionLauncher.launch(new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
