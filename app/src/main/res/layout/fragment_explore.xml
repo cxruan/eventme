@@ -4,208 +4,69 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingHorizontal="10dp"
     tools:context=".fragments.ExploreFragment">
 
-
-    <EditText
-        android:id="@+id/searchBar"
-        android:layout_width="260dp"
-        android:layout_height="46dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="104dp"
-        android:ems="10"
-        android:hint="Search"
-        android:imeOptions="actionDone"
-        android:inputType="textPersonName"
-        android:selectAllOnFocus="true"
-        android:textColor="#222222"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/searchBtn"
-        android:layout_width="78dp"
-        android:layout_height="44dp"
-        android:layout_marginStart="308dp"
-        android:layout_marginTop="104dp"
-        android:background="@drawable/round_button"
-        android:paddingLeft="22dp"
-        app:icon="@drawable/ic_baseline_search_24"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/ExploreTitle"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/fixedBar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="44dp"
-        android:text="Explore"
-        android:textColor="@color/black"
-        android:textSize="30dp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:paddingHorizontal="10dp"
+        android:paddingBottom="10dp"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/SearchByTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="168dp"
-        android:text="Search By:"
-        android:textColor="@color/black"
-        android:textSize="15dp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/searchResults"
-        android:layout_width="363dp"
-        android:layout_height="412dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="248dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/event_box"/>
-
-    <Spinner
-        android:id="@+id/searchBySpinner"
-        android:layout_width="99dp"
-        android:layout_height="31dp"
-        android:layout_marginStart="112dp"
-        android:layout_marginTop="160dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/SortByTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="224dp"
-        android:layout_marginTop="168dp"
-        android:text="Sort By:"
-        android:textColor="@color/black"
-        android:textSize="15dp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Spinner
-        android:id="@+id/sortBySpinner"
-        android:layout_width="99dp"
-        android:layout_height="31dp"
-        android:layout_marginStart="288dp"
-        android:layout_marginTop="160dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
-
-    <TextView
-        android:id="@+id/resultsNumber"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="224dp"
-        android:text=""
-        android:textColor="@color/grey"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/noResults"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="148dp"
-        android:layout_marginTop="400dp"
-        android:text="No results..."
-        android:textColor="@color/grey"
-        android:textSize="20dp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/SearchByTypeTitle"
-        android:layout_width="126dp"
-        android:layout_height="22dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="196dp"
-        android:text="All Categories"
-        android:textColor="@color/black"
-        android:textSize="15dp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.gridlayout.widget.GridLayout
-        android:id="@+id/SearchByTypeGrid"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:layout_marginStart="52dp"
-        android:layout_marginTop="256dp"
-        app:columnCount="2"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:rowCount="2">
 
         <TextView
-            android:id="@+id/Arts"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:background="@drawable/ic_baseline_draw_24"
-            android:text="Art"
-            android:textAlignment="center"
+            android:id="@+id/ExploreTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:text="Explore"
             android:textColor="@color/black"
-            android:textSize="15dp"
+            android:textSize="30dp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/Food_Drinks"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:background="@drawable/ic_baseline_fastfood_24"
-            android:text="Food &amp; Drinks"
-            android:textAlignment="center"
-            android:textColor="@color/black"
-            android:textSize="15dp"
-            android:textStyle="bold"
+        <EditText
+            android:id="@+id/searchBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:hint="Search for..."
+            android:imeOptions="actionDone"
+            android:inputType="textPersonName"
+            android:selectAllOnFocus="true"
+            android:textSize="24dp"
+            app:layout_constraintEnd_toStartOf="@id/searchBtn"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/ExploreTitle" />
 
-        <TextView
-            android:id="@+id/Music"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:background="@drawable/ic_baseline_music_note_24"
-            android:text="Music"
-            android:textAlignment="center"
-            android:textColor="@color/black"
-            android:textSize="15dp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/searchBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_baseline_search_24"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:layout_constraintBottom_toBottomOf="@id/searchBar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Material3.Button" />
 
-        <TextView
-            android:id="@+id/Outdoors"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:background="@drawable/ic_baseline_wb_sunny_24"
-            android:drawablePadding="10dp"
-            android:text="Outdoors"
-            android:textAlignment="center"
-            android:textColor="@color/black"
-            android:textSize="15dp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
-    </androidx.gridlayout.widget.GridLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <fragment
+        android:id="@+id/eventListFragment"
+        android:name="com.example.eventme.fragments.EventListFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/fixedBar"
+        app:layout_constraintVertical_bias="1.0"
+        tools:layout="@layout/fragment_event_list" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

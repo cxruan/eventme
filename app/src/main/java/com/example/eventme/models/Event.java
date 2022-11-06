@@ -10,6 +10,7 @@ import com.google.firebase.database.IgnoreExtraProperties;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @IgnoreExtraProperties
 public class Event {
@@ -83,6 +84,19 @@ public class Event {
         return registeredUsers;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Event event = (Event) o;
+        return Objects.equals(eventId, event.eventId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(eventId);
+    }
+
     public static boolean checkTimeConflict(Event e1, Event e2) {
         if (!e1.getDate().equals(e2.getDate()))
             return false;
@@ -114,9 +128,9 @@ public class Event {
             endMin2 = time1[3];
         }
 
-        if(endHour1 > startHour2)
+        if (endHour1 > startHour2)
             return true;
-        if(endHour1 == startHour2 && endMin1 >= startMin2)
+        if (endHour1 == startHour2 && endMin1 >= startMin2)
             return true;
 
 
