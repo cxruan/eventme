@@ -1,6 +1,5 @@
 package com.example.eventme.fragments;
 
-import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,8 +9,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -82,6 +79,10 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
         mViewModel.getEventsData().observe(getViewLifecycleOwner(), events -> {
             binding.eventNum.setText(String.valueOf(events.size()));
             mEventBoxAdapter.setItems(events);
+            if (events.size() == 0)
+                binding.emptyResultText.setVisibility(View.VISIBLE);
+            else
+                binding.emptyResultText.setVisibility(View.GONE);
         });
     }
 
