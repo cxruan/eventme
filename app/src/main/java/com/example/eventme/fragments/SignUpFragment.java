@@ -125,6 +125,14 @@ public class SignUpFragment extends Fragment {
             binding.email.setError(null);
         }
 
+        if (TextUtils.isEmpty(binding.birthday.getText().toString())) {
+            binding.birthday.setError("Required");
+            binding.birthday.requestFocus();
+            valid = false;
+        } else {
+            binding.birthday.setError(null);
+        }
+
         if (TextUtils.isEmpty(binding.password.getText().toString())) {
             binding.password.setError("Required");
             binding.password.requestFocus();
