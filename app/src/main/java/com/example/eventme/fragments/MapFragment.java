@@ -1,5 +1,7 @@
 package com.example.eventme.fragments;
 
+import static com.example.eventme.utils.Utils.distanceBetweenLocations;
+
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -23,14 +25,13 @@ import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventme.EventRegistrationActivity;
 import com.example.eventme.R;
 import com.example.eventme.adapters.EventBoxAdapter;
 import com.example.eventme.databinding.FragmentMapBinding;
 import com.example.eventme.models.Event;
+import com.example.eventme.viewmodels.EventListFragmentViewModel;
 import com.example.eventme.viewmodels.MapFragmentViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -48,7 +49,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: Filter events given user's current location
 public class MapFragment extends Fragment implements
         OnMapReadyCallback,
         GoogleMap.OnMarkerClickListener,
@@ -56,8 +56,9 @@ public class MapFragment extends Fragment implements
 
     private static final String TAG = "MapFragment";
     private static final Integer DEFAULT_ZOOM_LEVEL = 15;
-    private static final Integer EVENT_LIST_CARD_OFFSET_DP= 85;
-    private static final Integer EVENT_LIST_CARD_RADIUS_DP= 20;
+    private static final Integer EVENT_LIST_CARD_OFFSET_DP = 85;
+    private static final Integer EVENT_LIST_CARD_RADIUS_DP = 20;
+    private static final Integer SHOW_EVENTS_IN_KM = 5;
 
     private FragmentMapBinding binding;
 
@@ -66,12 +67,10 @@ public class MapFragment extends Fragment implements
     private GoogleMap mMap;
     private UiSettings mUiSettings;
     private MapFragmentViewModel mViewModel;
+    private EventListFragmentViewModel mListViewModel;
+    private CardView mEventBoxView;
 
     private ActivityResultLauncher<String[]> requestPermissionLauncher;
-    private CardView mEventBoxView;
-    private EventBoxAdapter mEventBoxAdapter;
-    private LinearLayoutManager mManager;
-    RecyclerView mRecycler;
 
     private float pxInDp, dY, startY, initialY = 0;
 
@@ -85,50 +84,9 @@ public class MapFragment extends Fragment implements
         mEventBoxView.setVisibility(View.INVISIBLE);
 
         pxInDp = getResources().getDisplayMetrics().density;
+
         // Set up event list card swiping animation
-        binding.eventListCard.setOnTouchListener((vw, event) -> {
-            CardView view = (CardView) vw;
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    startY = view.getY();
-                    if (initialY == 0) // record card's initial y
-                        initialY = startY;
-                    dY = view.getY() - event.getRawY();
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    if (event.getRawY() + dY < 0 || event.getRawY() + dY > initialY)
-                        return true;
-                    view.animate()
-                            .y(event.getRawY() + dY)
-                            .setDuration(0)
-                            .start();
-                    break;
-                case MotionEvent.ACTION_UP:
-                    float offsetY = event.getRawY() + dY - startY;
-                    if (offsetY > 300) { // Swiping down
-                        view.animate()
-                                .y(initialY)
-                                .setDuration(300)
-                                .start();
-                        view.setRadius(EVENT_LIST_CARD_RADIUS_DP * pxInDp);
-                    } else if (offsetY < -300) { // Swiping up
-                        view.animate()
-                                .y(0)
-                                .setDuration(300)
-                                .start();
-                        view.setRadius(0);
-                    } else {
-                        view.animate()
-                                .y(startY)
-                                .setDuration(300)
-                                .start();
-                    }
-                    break;
-                default:
-                    return false;
-            }
-            return true;
-        });
+        binding.eventListCard.setOnTouchListener(this::onListTouchListener);
 
         // Initialize map fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
@@ -144,24 +102,9 @@ public class MapFragment extends Fragment implements
         mDatabase = FirebaseDatabase.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        // Binding view model
+        // Binding view models
         mViewModel = new ViewModelProvider(requireActivity()).get(MapFragmentViewModel.class);
-
-        // Set up Adapter
-        mEventBoxAdapter = new EventBoxAdapter();
-        mEventBoxAdapter.setOnItemClickListener((position, v) -> {
-            // Pass eventId to Registration activity when clicking event box
-            Event event = mEventBoxAdapter.getItemByPos(position);
-            Intent intent = new Intent(requireActivity(), EventRegistrationActivity.class);
-            intent.putExtra("com.example.eventme.EventRegistration.eventId", event.getEventId());
-            startActivity(intent);
-        });
-
-        // Set up RecyclerView
-        mManager = new LinearLayoutManager(getActivity());
-        mRecycler = binding.eventList;
-        mRecycler.setLayoutManager(mManager);
-        mRecycler.setAdapter(mEventBoxAdapter);
+        mListViewModel = new ViewModelProvider(this).get(EventListFragmentViewModel.class);
 
         // Permission request dialogue callback
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
@@ -205,17 +148,24 @@ public class MapFragment extends Fragment implements
                 LatLng coordinate = new LatLng(location.getLatitude(), location.getLongitude());
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, DEFAULT_ZOOM_LEVEL));
 
+                mViewModel.loadAllData();
                 mViewModel.getEventsData().observe(getViewLifecycleOwner(), events -> {
+                    List<Event> orderedList = new ArrayList<>();
+
                     for (Event event : events.values()) {
                         double eventLon = event.getGeoLocation().get("lng");
                         double eventLat = event.getGeoLocation().get("lat");
 
-                        Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(eventLat, eventLon)));
-                        marker.setTag(event.getEventId());
+                        double distance = distanceBetweenLocations(coordinate.latitude, coordinate.longitude, eventLat, eventLon);
+                        if (distance < SHOW_EVENTS_IN_KM) {
+                            orderedList.add(event);
+                            Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(eventLat, eventLon)));
+                            marker.setTag(event.getEventId());
+                        }
                     }
 
-                    List<Event> orderedEvents = new ArrayList<>(events.values());
-                    mEventBoxAdapter.setItems(orderedEvents);
+                    orderedList.sort(new Event.EventDistanceComparator(coordinate.latitude, coordinate.longitude));
+                    mListViewModel.setEventsData(orderedList);
                 });
             });
         } catch (SecurityException e) {
@@ -232,7 +182,7 @@ public class MapFragment extends Fragment implements
                 return;
             }
 
-            // 2. Otherwise, request location permissions from the user.
+            // 2. Otherwise, request location permissions from the user.œœ
             requestPermissionLauncher.launch(new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
@@ -245,36 +195,6 @@ public class MapFragment extends Fragment implements
     private boolean isLocationPermissionGranted() {
         return ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    public List<Event> filterWithinDistance(int kilometers, double currentLon, double currentLat, List<Event> events) {
-        ArrayList<Event> eventsInDistance = new ArrayList<>();
-        for (Event event : events) {
-            double eventLon = event.getGeoLocation().get("lng");
-            double eventLat = event.getGeoLocation().get("lat");
-
-            double dLat = Math.toRadians(currentLat - eventLat);
-            double dLon = Math.toRadians(currentLon - eventLon);
-
-            currentLat = Math.toRadians(currentLat);
-            eventLat = Math.toRadians(eventLat);
-
-            double a = Math.pow(Math.sin(dLat / 2), 2) +
-                    Math.pow(Math.sin(dLon / 2), 2) *
-                            Math.cos(eventLat) *
-                            Math.cos(currentLat);
-            double rad = 6371;
-            double c = 2 * Math.asin(Math.sqrt(a));
-            double distance = rad * c;
-
-            System.out.println(event.getName());
-            System.out.println(distance);
-
-            if (distance < kilometers) {
-                eventsInDistance.add(event);
-            }
-        }
-        return eventsInDistance;
     }
 
     @Override
@@ -300,7 +220,6 @@ public class MapFragment extends Fragment implements
             startActivity(intent);
         });
 
-
         mEventBoxView.setVisibility(View.VISIBLE);
 
         // Get actual height
@@ -319,6 +238,7 @@ public class MapFragment extends Fragment implements
         });
     }
 
+    // Close event box view
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
         // Animate
@@ -332,5 +252,50 @@ public class MapFragment extends Fragment implements
             }
         });
         animation.start();
+    }
+
+    private boolean onListTouchListener(View vw, MotionEvent event) {
+        CardView view = (CardView) vw;
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                startY = view.getY();
+                if (initialY == 0) // record card's initial y
+                    initialY = startY;
+                dY = view.getY() - event.getRawY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (event.getRawY() + dY < 0 || event.getRawY() + dY > initialY)
+                    return true;
+                view.animate()
+                        .y(event.getRawY() + dY)
+                        .setDuration(0)
+                        .start();
+                break;
+            case MotionEvent.ACTION_UP:
+                float offsetY = event.getRawY() + dY - startY;
+                if (offsetY > 300) { // Swiping down
+                    view.animate()
+                            .y(initialY)
+                            .setDuration(300)
+                            .start();
+                    view.setRadius(EVENT_LIST_CARD_RADIUS_DP * pxInDp);
+                } else if (offsetY < -300) { // Swiping up
+                    view.animate()
+                            .y(0)
+                            .setDuration(300)
+                            .start();
+                    view.setRadius(0);
+                } else {
+                    view.animate()
+                            .y(startY)
+                            .setDuration(300)
+                            .start();
+                }
+                break;
+            default:
+                return false;
+        }
+        return true;
     }
 }

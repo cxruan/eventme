@@ -1,7 +1,6 @@
 package com.example.eventme.viewmodels;
 
 import android.util.Log;
-import android.view.View;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -58,8 +57,7 @@ public class ProfileFragmentViewModel extends ViewModel {
         }
     }
 
-
-    private void loadAllData() {
+    public void loadAllData() {
         if (mAuth.getCurrentUser() != null) {
             mDatabase.getReference().child("users").child(mAuth.getUid()).get().addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {

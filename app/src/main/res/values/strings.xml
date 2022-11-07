@@ -17,6 +17,7 @@
     <string name="map">Map</string>
     <string name="profile">Profile</string>
     <string name="log_out">Log out</string>
+    <string name="birthday">Birthday</string>
     <string-array name="searchBy_array">
         <item>Name</item>
         <item>Location</item>

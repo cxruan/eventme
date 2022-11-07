@@ -1,5 +1,6 @@
 package com.example.eventme.fragments;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -7,6 +8,7 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.DatePicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -25,12 +27,16 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-public class
-SignUpFragment extends Fragment {
+import java.util.Calendar;
+
+public class SignUpFragment extends Fragment {
     private static final String TAG = "SignUpFragment";
 
     private DatabaseReference mDatabase;
     private FirebaseAuth mAuth;
+    private DatePickerDialog mPicker;
+    private Calendar myCalendar;
+    private DatePickerDialog.OnDateSetListener mDateListener;
 
     private FragmentSignupBinding binding;
 
@@ -47,8 +53,12 @@ SignUpFragment extends Fragment {
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
 
+        myCalendar = Calendar.getInstance();
+        mDateListener = (vw, year, month, day) -> binding.birthday.setText(year + "/" + month + "/" + (day < 10 ? "0" + day : day));
+
         // Click listeners
         binding.signUp.setOnClickListener(this::onClickSignUp);
+        binding.birthday.setOnClickListener(this::onClickBirthday);
     }
 
     private void onClickSignUp(View view) {
@@ -66,6 +76,7 @@ SignUpFragment extends Fragment {
         String password = binding.password.getText().toString();
         String firstName = binding.firstName.getText().toString();
         String lastName = binding.lastName.getText().toString();
+        String birthday = binding.birthday.getText().toString();
 
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
@@ -74,7 +85,7 @@ SignUpFragment extends Fragment {
                         Log.d(TAG, "createUser:onComplete:" + task.isSuccessful());
 
                         if (task.isSuccessful()) {
-                            onAuthSuccess(task.getResult().getUser(), firstName, lastName);
+                            onAuthSuccess(task.getResult().getUser(), firstName, lastName, birthday);
                         } else {
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
                             Toast.makeText(getContext(), "Sign-up Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
@@ -133,9 +144,9 @@ SignUpFragment extends Fragment {
         return valid;
     }
 
-    private void onAuthSuccess(FirebaseUser firebaseUser, String firstName, String lastName){
+    private void onAuthSuccess(FirebaseUser firebaseUser, String firstName, String lastName, String birthday) {
         String userId = firebaseUser.getUid();
-        User user = new User(userId, firstName, lastName, firebaseUser.getEmail());
+        User user = new User(userId, firstName, lastName, firebaseUser.getEmail(), birthday);
 
         // Write new user information to Firebase Realtime Database
         mDatabase.child("users").child(userId).setValue(user).addOnCompleteListener(task -> {
@@ -149,6 +160,7 @@ SignUpFragment extends Fragment {
         });
     }
 
-
-
+    private void onClickBirthday(View view) {
+        new DatePickerDialog(getContext(), mDateListener, myCalendar.get(Calendar.YEAR), myCalendar.get(Calendar.MONTH), myCalendar.get(Calendar.DAY_OF_MONTH)).show();
+    }
 }
