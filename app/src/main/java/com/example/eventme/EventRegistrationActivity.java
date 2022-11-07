@@ -147,6 +147,8 @@ public class EventRegistrationActivity extends AppCompatActivity {
             if (task.isSuccessful()) {
                 User user = task.getResult().getValue(User.class);
                 // Get registered events
+                if (user.getRegisteredEvents().isEmpty())
+                    registerEvent();
 
                 for (String id : user.getRegisteredEvents().keySet()) {
                     mDatabase.getReference().child("events").child(id).get().addOnCompleteListener(eventTask -> {

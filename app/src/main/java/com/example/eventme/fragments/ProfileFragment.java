@@ -1,6 +1,5 @@
 package com.example.eventme.fragments;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,15 +15,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.eventme.EventRegistrationActivity;
 import com.example.eventme.R;
-import com.example.eventme.adapters.EventBoxAdapter;
 import com.example.eventme.databinding.FragmentProfileBinding;
-import com.example.eventme.models.Event;
 import com.example.eventme.utils.GlideApp;
+import com.example.eventme.viewmodels.EventListFragmentViewModel;
 import com.example.eventme.viewmodels.ProfileFragmentViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
@@ -40,11 +35,9 @@ public class ProfileFragment extends Fragment {
     private FirebaseAuth mAuth;
     private FirebaseDatabase mDatabase;
     private FirebaseStorage mStorage;
-    private RecyclerView mRecycler;
-    private LinearLayoutManager mManager;
-    private EventBoxAdapter mEventBoxAdapter;
     ActivityResultLauncher<String> mGetContent;
     ProfileFragmentViewModel mViewModel;
+    private EventListFragmentViewModel mListViewModel;
 
     @Nullable
     @Override
@@ -67,28 +60,14 @@ public class ProfileFragment extends Fragment {
             return;
         }
 
-        // Set up Adapter
-        mEventBoxAdapter = new EventBoxAdapter();
-        mEventBoxAdapter.setOnItemClickListener((position, v) -> {
-            // Pass eventId to Registration activity when clicking event box
-            Event event = mEventBoxAdapter.getItemByPos(position);
-            Intent intent = new Intent(requireActivity(), EventRegistrationActivity.class);
-            intent.putExtra("com.example.eventme.EventRegistration.eventId", event.getEventId());
-            startActivity(intent);
-        });
-
-        // Set up RecyclerView
-        mManager = new LinearLayoutManager(getActivity());
-        mRecycler = binding.eventList;
-        mRecycler.setLayoutManager(mManager);
-        mRecycler.setAdapter(mEventBoxAdapter);
-
         // Hide info until data fetched
         binding.name.setVisibility(View.INVISIBLE);
         binding.infoRow.setVisibility(View.INVISIBLE);
 
         // Subscribe to ViewModel data
         mViewModel = new ViewModelProvider(requireActivity()).get(ProfileFragmentViewModel.class);
+        mListViewModel = new ViewModelProvider(this).get(EventListFragmentViewModel.class);
+
         mViewModel.getUserData().observe(getViewLifecycleOwner(), user -> {
             binding.name.setText(user.getFirstName() + " " + user.getLastName());
             binding.birthday.setText(user.getBirthday());
@@ -107,7 +86,7 @@ public class ProfileFragment extends Fragment {
             }
         });
         mViewModel.getRegisteredEventsData().observe(getViewLifecycleOwner(), events -> {
-            mEventBoxAdapter.setItems(events);
+            mListViewModel.setEventsData(events);
         });
 
 
