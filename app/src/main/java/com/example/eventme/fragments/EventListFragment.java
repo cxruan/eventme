@@ -1,6 +1,8 @@
 package com.example.eventme.fragments;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,8 +11,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -38,6 +43,7 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
     private LinearLayoutManager mManager;
     private RecyclerView mRecycler;
     private EventListFragmentViewModel mViewModel;
+    private ActivityResultLauncher<String[]> requestPermissionLauncher;
 
     @Nullable
     @Override
@@ -49,6 +55,16 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Permission request dialogue callback
+        requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+            Boolean fineLocationGranted = result.get(Manifest.permission.ACCESS_FINE_LOCATION);
+            Boolean coarseLocationGranted = result.get(Manifest.permission.ACCESS_COARSE_LOCATION);
+
+            if (fineLocationGranted != null || coarseLocationGranted != null) {
+                // location access granted.
+            }
+        });
 
         // Set up Adapter
         mEventBoxAdapter = new EventBoxAdapter();
@@ -84,6 +100,34 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
             else
                 binding.emptyResultText.setVisibility(View.GONE);
         });
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        enableMyLocation();
+    }
+
+    private void enableMyLocation() {
+        try {
+            // 1. Check if permissions are granted
+            if (isLocationPermissionGranted()) {
+                return;
+            }
+
+            // 2. Otherwise, request location permissions from the user.œœ
+            requestPermissionLauncher.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        } catch (SecurityException e) {
+            Log.e("Exception: %s", e.getMessage(), e);
+        }
+    }
+
+    private boolean isLocationPermissionGranted() {
+        return ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     @Override
