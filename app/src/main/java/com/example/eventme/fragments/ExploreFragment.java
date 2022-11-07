@@ -231,7 +231,6 @@ public class ExploreFragment extends Fragment {
     private boolean checkDate(Event event) {
         if (mStartDate == null || mEndDate == null)
             return true;
-        Log.d(TAG, String.format("checkDate: %s %s %s %d %d", mStartDate, mEndDate, event.getDate(), event.getDate().compareTo(mStartDate), event.getDate().compareTo(mEndDate)));
         if (event.getDate().compareTo(mStartDate) >= 0 && event.getDate().compareTo(mEndDate) <= 0)
             return true;
         return false;

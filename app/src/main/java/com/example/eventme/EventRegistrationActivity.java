@@ -56,8 +56,7 @@ public class EventRegistrationActivity extends AppCompatActivity {
         // Set up conflicting event alert dialog
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
         builder1.setMessage("Are you sure to proceed?")
-                .setTitle("Conflicting with registered events")
-                .setIcon(R.drawable.ic_baseline_warning_24);
+                .setTitle("Conflicting with registered events");
         builder1.setPositiveButton("OK", (dialog, which) -> {
             registerEvent();
         });

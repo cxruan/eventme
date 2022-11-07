@@ -92,17 +92,27 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
         mViewModel = new ViewModelProvider(requireParentFragment()).get(EventListFragmentViewModel.class);
         mViewModel.getEventsData().observe(getViewLifecycleOwner(), events -> {
             binding.eventNum.setText(String.valueOf(events.size()));
-
+            if (requireParentFragment() instanceof MapFragment) {
+                binding.sortBySpinner.setSelection(3); // Defaults to Location if in map page
+                FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+                try {
+                    fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                        events.sort(new Event.EventDistanceComparator(location.getLatitude(), location.getLongitude()));
+                    });
+                } catch (SecurityException e) {
+                    Log.e("Exception: %s", e.getMessage(), e);
+                }
+            } else {
+                binding.sortBySpinner.setSelection(0);
+                events.sort(new Event.EventCostComparator());
+            }
             mEventBoxAdapter.setItems(events);
             if (events.size() == 0)
                 binding.emptyResultText.setVisibility(View.VISIBLE);
             else
                 binding.emptyResultText.setVisibility(View.GONE);
 
-            if (requireParentFragment() instanceof MapFragment)
-                binding.sortBySpinner.setSelection(3); // Defaults to Location if in map page
-            else
-                binding.sortBySpinner.setSelection(0);
+
         });
     }
 
