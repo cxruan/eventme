@@ -101,7 +101,10 @@ public class ProfileFragment extends Fragment {
             if (uri != null) // Profile picture found
                 loadProfilePicture(uri);
             else // No profile picture, use default person drawable
+            {
                 binding.profilePic.setImageResource(R.drawable.ic_baseline_person_24);
+                binding.profilePicOverlay.setVisibility(View.VISIBLE);
+            }
         });
         mViewModel.getRegisteredEventsData().observe(getViewLifecycleOwner(), events -> {
             mEventBoxAdapter.setItems(events);
@@ -110,28 +113,30 @@ public class ProfileFragment extends Fragment {
 
         // Set up ActivityResultLauncher for picture uploading
         mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-            // Handle the returned Uri
-            String path = "users/" + mAuth.getUid() + "/" + uri.getLastPathSegment();
-            StorageReference ref = mStorage.getReference().child(path);
+            if (uri != null) {
+                // Handle the returned Uri
+                String path = "users/" + mAuth.getUid() + "/" + uri.getLastPathSegment();
+                StorageReference ref = mStorage.getReference().child(path);
 
-            UploadTask uploadTask = ref.putFile(uri);
+                UploadTask uploadTask = ref.putFile(uri);
 
-            // Register observers to listen for when the download is done or if it fails
-            uploadTask
-                    .addOnFailureListener(exception -> {
-                        // Handle unsuccessful uploads
-                        Log.e(TAG, "Error uploading profile picture", exception);
-                        Toast.makeText(getContext(), "Error uploading profile picture", Toast.LENGTH_LONG).show();
-                    })
-                    .addOnSuccessListener(taskSnapshot -> {
-                        String newUri = Uri.decode(taskSnapshot.getStorage().toString());// Has to decode cause getReferenceFromUrl accepts only decoded uri
+                // Register observers to listen for when the download is done or if it fails
+                uploadTask
+                        .addOnFailureListener(exception -> {
+                            // Handle unsuccessful uploads
+                            Log.e(TAG, "Error uploading profile picture", exception);
+                            Toast.makeText(getContext(), "Error uploading profile picture", Toast.LENGTH_LONG).show();
+                        })
+                        .addOnSuccessListener(taskSnapshot -> {
+                            String newUri = Uri.decode(taskSnapshot.getStorage().toString());// Has to decode cause getReferenceFromUrl accepts only decoded uri
 
-                        mDatabase.getReference().child("users").child(mAuth.getUid()).child("profilePictureURI").setValue(newUri, (error, reference) -> {
-                            loadProfilePicture(newUri);
-                            mViewModel.updateUserData(); // Update ViewModel after profile picture uploaded successfully
-                            Toast.makeText(getContext(), "Profile picture uploaded successfully", Toast.LENGTH_LONG).show();
+                            mDatabase.getReference().child("users").child(mAuth.getUid()).child("profilePictureURI").setValue(newUri, (error, reference) -> {
+                                loadProfilePicture(newUri);
+                                mViewModel.updateUserData(); // Update ViewModel after profile picture uploaded successfully
+                                Toast.makeText(getContext(), "Profile picture uploaded successfully", Toast.LENGTH_LONG).show();
+                            });
                         });
-                    });
+            }
         });
 
         // Click listeners
@@ -149,6 +154,7 @@ public class ProfileFragment extends Fragment {
 
     private void loadProfilePicture(String uri) {
         StorageReference ref = mStorage.getReferenceFromUrl(uri);
+        binding.profilePicOverlay.setVisibility(View.GONE);
         GlideApp.with(this)
                 .load(ref)
                 .circleCrop()
