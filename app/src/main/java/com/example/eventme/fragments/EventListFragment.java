@@ -87,18 +87,22 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
         adapterSort.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.sortBySpinner.setAdapter(adapterSort);
         binding.sortBySpinner.setOnItemSelectedListener(this);
-        if (requireParentFragment() instanceof MapFragment)
-            binding.sortBySpinner.setSelection(3); // Defaults to Location if in map page
 
         // Set up view model, listening for events from parent fragment
         mViewModel = new ViewModelProvider(requireParentFragment()).get(EventListFragmentViewModel.class);
         mViewModel.getEventsData().observe(getViewLifecycleOwner(), events -> {
             binding.eventNum.setText(String.valueOf(events.size()));
+
             mEventBoxAdapter.setItems(events);
             if (events.size() == 0)
                 binding.emptyResultText.setVisibility(View.VISIBLE);
             else
                 binding.emptyResultText.setVisibility(View.GONE);
+
+            if (requireParentFragment() instanceof MapFragment)
+                binding.sortBySpinner.setSelection(3); // Defaults to Location if in map page
+            else
+                binding.sortBySpinner.setSelection(0);
         });
     }
 
