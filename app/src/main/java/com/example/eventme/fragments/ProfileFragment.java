@@ -18,9 +18,13 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.eventme.R;
 import com.example.eventme.databinding.FragmentProfileBinding;
+import com.example.eventme.models.Event;
 import com.example.eventme.utils.GlideApp;
+import com.example.eventme.utils.Utils;
 import com.example.eventme.viewmodels.EventListFragmentViewModel;
 import com.example.eventme.viewmodels.ProfileFragmentViewModel;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -86,7 +90,18 @@ public class ProfileFragment extends Fragment {
             }
         });
         mViewModel.getRegisteredEventsData().observe(getViewLifecycleOwner(), events -> {
-            mListViewModel.setEventsData(events);
+            FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+            try {
+                fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                    for (Event event : events) {
+                        double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
+                        event.setDistanceFromUserLocation(distance);
+                    }
+                    mListViewModel.setEventsData(events);
+                });
+            } catch (SecurityException e) {
+                Log.e("Exception: %s", e.getMessage(), e);
+            }
         });
 
 

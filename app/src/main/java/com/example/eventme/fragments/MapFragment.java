@@ -110,9 +110,10 @@ public class MapFragment extends Fragment implements
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
             Boolean fineLocationGranted = result.get(Manifest.permission.ACCESS_FINE_LOCATION);
             Boolean coarseLocationGranted = result.get(Manifest.permission.ACCESS_COARSE_LOCATION);
-
+            Log.d(TAG, String.format("onViewCreated: %s %s ", fineLocationGranted, coarseLocationGranted));
             if (fineLocationGranted != null || coarseLocationGranted != null) {
                 // location access granted.
+
                 enableMyLocation();
                 loadMapData();
             }
@@ -158,6 +159,7 @@ public class MapFragment extends Fragment implements
 
                         double distance = distanceBetweenLocations(coordinate.latitude, coordinate.longitude, eventLat, eventLon);
                         if (distance < SHOW_EVENTS_IN_KM) {
+                            event.setDistanceFromUserLocation(distance);
                             orderedList.add(event);
                             Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(eventLat, eventLon)));
                             marker.setTag(event.getEventId());
