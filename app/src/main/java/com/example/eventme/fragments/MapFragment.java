@@ -58,7 +58,7 @@ public class MapFragment extends Fragment implements
     private static final Integer DEFAULT_ZOOM_LEVEL = 15;
     private static final Integer EVENT_LIST_CARD_OFFSET_DP = 85;
     private static final Integer EVENT_LIST_CARD_RADIUS_DP = 20;
-    private static final Integer SHOW_EVENTS_IN_KM = 5;
+    private static final Integer SHOW_EVENTS_IN_KM = 50;
 
     private FragmentMapBinding binding;
 
