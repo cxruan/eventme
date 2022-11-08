@@ -22,7 +22,10 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.eventme.R;
 import com.example.eventme.databinding.FragmentExploreBinding;
 import com.example.eventme.models.*;
+import com.example.eventme.utils.Utils;
 import com.example.eventme.viewmodels.EventListFragmentViewModel;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.FirebaseDatabase;
@@ -187,10 +190,19 @@ public class ExploreFragment extends Fragment {
         for (String searchKey : searchKeys) {
             mDatabase.getReference().child("events").orderByChild(searchKey).startAt(term).endAt(term + "\uf8ff").get().addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    for (DataSnapshot data : task.getResult().getChildren()) {
-                        Event event = data.getValue(Event.class);
-                        if (checkDate(event) && checkType(event))
-                            mListViewModel.addEventsData(event);
+                    FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+                    try {
+                        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                            for (DataSnapshot data : task.getResult().getChildren()) {
+                                Event event = data.getValue(Event.class);
+                                double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
+                                event.setDistanceFromUserLocation(distance);
+                                if (checkDate(event) && checkType(event))
+                                    mListViewModel.addEventsData(event);
+                            }
+                        });
+                    } catch (SecurityException e) {
+                        Log.e("Exception: %s", e.getMessage(), e);
                     }
                 } else {
                     Log.e(TAG, "loadSearchResults: error loading events", task.getException());

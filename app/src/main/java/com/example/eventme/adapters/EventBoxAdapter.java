@@ -71,6 +71,7 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
         public TextView timeView;
         public TextView locationView;
         public TextView sponsorView;
+        public TextView distaneView;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -83,6 +84,7 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
             timeView = itemView.findViewById(R.id.time);
             locationView = itemView.findViewById(R.id.location);
             sponsorView = itemView.findViewById(R.id.sponsor);
+            distaneView = itemView.findViewById(R.id.distance);
         }
 
         public void bind(Event event) {
@@ -92,6 +94,12 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
             timeView.setText(event.getTime());
             locationView.setText(event.getLocation());
             sponsorView.setText(event.getSponsor());
+            if (event.getDistanceFromUserLocation() != null) {
+                distaneView.setVisibility(View.VISIBLE);
+                distaneView.setText(String.format("%.1f km", event.getDistanceFromUserLocation()));
+            }else{
+                distaneView.setVisibility(View.GONE);
+            }
         }
 
         @Override

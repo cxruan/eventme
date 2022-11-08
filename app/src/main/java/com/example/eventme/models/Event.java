@@ -27,11 +27,13 @@ public class Event {
     private String photoURI;
     private Map<String, Double> geoLocation = new HashMap<>();
     private Map<String, Boolean> registeredUsers = new HashMap<>();
+    private Double distanceFromUserLocation;
 
     public Event() {
         // Default constructor required for calls to DataSnapshot.getValue(Event.class)
     }
 
+    // Firebase Database populated fields
     public String getEventId() {
         return eventId;
     }
@@ -82,6 +84,15 @@ public class Event {
 
     public Map<String, Boolean> getRegisteredUsers() {
         return registeredUsers;
+    }
+
+    // self-populated fields
+    public Double getDistanceFromUserLocation() {
+        return distanceFromUserLocation;
+    }
+
+    public void setDistanceFromUserLocation(Double distanceFromUserLocation) {
+        this.distanceFromUserLocation = distanceFromUserLocation;
     }
 
     @Override
