@@ -97,7 +97,8 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
                 FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
                 try {
                     fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-                        events.sort(new Event.EventDistanceComparator(location.getLatitude(), location.getLongitude()));
+                        if (location != null)
+                            events.sort(new Event.EventDistanceComparator(location.getLatitude(), location.getLongitude()));
                     });
                 } catch (SecurityException e) {
                     Log.e("Exception: %s", e.getMessage(), e);
@@ -162,6 +163,8 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
             FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
             try {
                 fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                    if (location == null)
+                        return;
                     list.sort(new Event.EventDistanceComparator(location.getLatitude(), location.getLongitude()));
                     mEventBoxAdapter.setItems(list);
                 });

@@ -93,9 +93,11 @@ public class ProfileFragment extends Fragment {
             FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
             try {
                 fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-                    for (Event event : events) {
-                        double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
-                        event.setDistanceFromUserLocation(distance);
+                    if (location != null) {
+                        for (Event event : events) {
+                            double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
+                            event.setDistanceFromUserLocation(distance);
+                        }
                     }
                     mListViewModel.setEventsData(events);
                 });

@@ -142,6 +142,8 @@ public class MapFragment extends Fragment implements
         try {
             FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
             fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                if(location == null)
+                    return;
                 // Clear map and view model observers
                 mViewModel.getEventsData().removeObservers(getViewLifecycleOwner());
                 mMap.clear();

@@ -195,8 +195,10 @@ public class ExploreFragment extends Fragment {
                         fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
                             for (DataSnapshot data : task.getResult().getChildren()) {
                                 Event event = data.getValue(Event.class);
-                                double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
-                                event.setDistanceFromUserLocation(distance);
+                                if (location != null) {
+                                    double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
+                                    event.setDistanceFromUserLocation(distance);
+                                }
                                 if (checkDate(event) && checkType(event))
                                     mListViewModel.addEventsData(event);
                             }
