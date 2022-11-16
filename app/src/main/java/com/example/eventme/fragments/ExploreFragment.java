@@ -19,6 +19,7 @@ import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.eventme.BuildConfig;
 import com.example.eventme.R;
 import com.example.eventme.databinding.FragmentExploreBinding;
 import com.example.eventme.models.*;
@@ -63,6 +64,9 @@ public class ExploreFragment extends Fragment {
 
         // Set up Firebase Database
         mDatabase = FirebaseDatabase.getInstance();
+        if (BuildConfig.DEBUG) {
+            mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
+        }
 
         // Set up range calender builder
         MaterialDatePicker.Builder<Pair<Long, Long>> materialDateBuilder = MaterialDatePicker.Builder.dateRangePicker();

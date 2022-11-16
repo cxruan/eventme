@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.eventme.BuildConfig;
 import com.example.eventme.R;
 import com.example.eventme.databinding.FragmentProfileBinding;
 import com.example.eventme.models.Event;
@@ -57,6 +58,11 @@ public class ProfileFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance();
         mStorage = FirebaseStorage.getInstance();
+        if (BuildConfig.DEBUG) {
+            mAuth.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_AUTH_PORT);
+            mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
+            mStorage.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_STORAGE_PORT);
+        }
 
         // If unauthenticated, prompt to log in or sign up
         if (mAuth.getCurrentUser() == null) {

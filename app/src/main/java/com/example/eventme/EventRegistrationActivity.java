@@ -52,6 +52,11 @@ public class EventRegistrationActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance();
         mStorage = FirebaseStorage.getInstance();
+        if (BuildConfig.DEBUG) {
+            mAuth.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_AUTH_PORT);
+            mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
+            mStorage.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_STORAGE_PORT);
+        }
 
         // Set up conflicting event alert dialog
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
@@ -92,7 +97,7 @@ public class EventRegistrationActivity extends AppCompatActivity {
 
                 String uri = mEvent.getPhotoURI();
                 if (uri != null)
-                    loadProfilePicture(uri);
+                    loadEventPicture(uri);
                 else
                     binding.photo.setImageResource(R.drawable.default_event_photo);
                 binding.name.setText(mEvent.getName());
@@ -222,7 +227,7 @@ public class EventRegistrationActivity extends AppCompatActivity {
         });
     }
 
-    private void loadProfilePicture(String uri) {
+    private void loadEventPicture(String uri) {
         StorageReference ref = mStorage.getReferenceFromUrl(uri);
         GlideApp.with(getBaseContext())
                 .load(ref)

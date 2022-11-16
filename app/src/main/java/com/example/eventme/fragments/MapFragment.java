@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.eventme.BuildConfig;
 import com.example.eventme.EventRegistrationActivity;
 import com.example.eventme.R;
 import com.example.eventme.adapters.EventBoxAdapter;
@@ -101,6 +102,10 @@ public class MapFragment extends Fragment implements
 
         mDatabase = FirebaseDatabase.getInstance();
         mAuth = FirebaseAuth.getInstance();
+        if (BuildConfig.DEBUG) {
+            mAuth.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_AUTH_PORT);
+            mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
+        }
 
         // Binding view models
         mViewModel = new ViewModelProvider(requireActivity()).get(MapFragmentViewModel.class);

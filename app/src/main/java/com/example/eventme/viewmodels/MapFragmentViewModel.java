@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.eventme.BuildConfig;
 import com.example.eventme.models.Event;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.FirebaseDatabase;
@@ -21,6 +22,9 @@ public class MapFragmentViewModel extends ViewModel {
 
     public MapFragmentViewModel() {
         mDatabase = FirebaseDatabase.getInstance();
+        if (BuildConfig.DEBUG) {
+            mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
+        }
     }
 
     public LiveData<HashMap<String, Event>> getEventsData() {

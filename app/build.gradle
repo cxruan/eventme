@@ -17,12 +17,18 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.debug
     }
 
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            buildConfigField("int", "FIREBASE_EMULATOR_AUTH_PORT", "9099")
+            buildConfigField("int", "FIREBASE_EMULATOR_DATABASE_PORT", "9000")
+            buildConfigField("int", "FIREBASE_EMULATOR_STORAGE_PORT", "9199")
         }
     }
     compileOptions {

@@ -8,7 +8,6 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.DatePicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -16,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.eventme.BuildConfig;
 import com.example.eventme.R;
 import com.example.eventme.databinding.FragmentSignupBinding;
 import com.example.eventme.models.User;
@@ -24,7 +24,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Calendar;
@@ -32,7 +31,7 @@ import java.util.Calendar;
 public class SignUpFragment extends Fragment {
     private static final String TAG = "SignUpFragment";
 
-    private DatabaseReference mDatabase;
+    private FirebaseDatabase mDatabase;
     private FirebaseAuth mAuth;
     private DatePickerDialog mPicker;
     private Calendar myCalendar;
@@ -50,8 +49,12 @@ public class SignUpFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mDatabase = FirebaseDatabase.getInstance();
         mAuth = FirebaseAuth.getInstance();
+        if (BuildConfig.DEBUG) {
+            mAuth.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_AUTH_PORT);
+            mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
+        }
 
         myCalendar = Calendar.getInstance();
         mDateListener = (vw, year, month, day) -> binding.birthday.setText(year + "/" + month + "/" + (day < 10 ? "0" + day : day));
@@ -157,7 +160,7 @@ public class SignUpFragment extends Fragment {
         User user = new User(userId, firstName, lastName, firebaseUser.getEmail(), birthday);
 
         // Write new user information to Firebase Realtime Database
-        mDatabase.child("users").child(userId).setValue(user).addOnCompleteListener(task -> {
+        mDatabase.getReference().child("users").child(userId).setValue(user).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 // Go to LoginFragment
                 NavHostFragment.findNavController(this).navigate(R.id.action_signUpFragment_to_loginFragment);
