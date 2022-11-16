@@ -25,11 +25,39 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <ImageView
-                android:id="@+id/profilePic"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/grey"/>
+            <FrameLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:foregroundGravity="bottom"
+                android:orientation="vertical" >
+
+                <ImageView
+                    android:id="@+id/profilePic"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/grey"/>
+
+                <LinearLayout
+                    android:id="@+id/profilePicOverlay"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:background="@color/translucent"
+                    android:orientation="vertical" >
+                    <TextView
+                        android:id="@+id/detailTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:text="Edit"
+                        android:textColor="@color/white"
+                        android:textIsSelectable="true"
+                        android:textSize="18sp" />
+                </LinearLayout>
+            </FrameLayout>
+
         </androidx.cardview.widget.CardView>
 
         <Button
@@ -134,25 +162,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginTop="10dp"
+                android:elevation="2dp"
                 android:background="@color/grey"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/title" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/eventList"
+            <fragment
+                android:id="@+id/eventListFragment"
+                android:name="com.example.eventme.fragments.EventListFragment"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:clipToPadding="false"
-                android:padding="10dp"
-                android:scrollbars="vertical"
-                android:scrollbarStyle="outsideOverlay"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/line"
                 app:layout_constraintVertical_bias="1.0"
-                tools:listitem="@layout/event_box">
-
-            </androidx.recyclerview.widget.RecyclerView>
+                tools:layout="@layout/fragment_event_list" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>

@@ -10,12 +10,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventme.R;
 import com.example.eventme.models.Event;
+import com.example.eventme.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHolder> {
+    private static ClickListener clickListener;
     private List<Event> mEvents;
+
+    public interface ClickListener {
+        void onItemClick(int position, View v);
+    }
 
     public EventBoxAdapter() {
         mEvents = new ArrayList<>();
@@ -41,33 +47,36 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
         return mEvents.size();
     }
 
-    public void addItem(Event event) {
-        mEvents.add(event);
-        notifyItemInserted(mEvents.size() - 1);
-    }
-
     public void setItems(List<Event> events) {
         mEvents = events;
-        notifyItemRangeChanged(0, mEvents.size());
+        notifyDataSetChanged();
     }
 
-    public void clearAllItem() {
-        int size = mEvents.size();
-        mEvents.clear();
-        notifyItemRangeRemoved(0, size);
-
+    public Event getItemByPos(int position) {
+        return mEvents.get(position);
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    public List<Event> getAllItems() {
+        return mEvents;
+    }
+
+    public void setOnItemClickListener(ClickListener clickListener) {
+        EventBoxAdapter.clickListener = clickListener;
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public TextView nameView;
         public TextView costView;
         public TextView dateView;
         public TextView timeView;
         public TextView locationView;
         public TextView sponsorView;
+        public TextView distaneView;
 
         public ViewHolder(View itemView) {
             super(itemView);
+
+            itemView.setOnClickListener(this);
 
             nameView = itemView.findViewById(R.id.name);
             costView = itemView.findViewById(R.id.cost);
@@ -75,15 +84,27 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
             timeView = itemView.findViewById(R.id.time);
             locationView = itemView.findViewById(R.id.location);
             sponsorView = itemView.findViewById(R.id.sponsor);
+            distaneView = itemView.findViewById(R.id.distance);
         }
 
         public void bind(Event event) {
             nameView.setText(event.getName());
             costView.setText(event.getCost().toString());
-            dateView.setText(event.getDate());
+            dateView.setText(Utils.formatDate(event.getDate()));
             timeView.setText(event.getTime());
             locationView.setText(event.getLocation());
             sponsorView.setText(event.getSponsor());
+            if (event.getDistanceFromUserLocation() != null) {
+                distaneView.setVisibility(View.VISIBLE);
+                distaneView.setText(String.format("%.1f km", event.getDistanceFromUserLocation()));
+            }else{
+                distaneView.setVisibility(View.GONE);
+            }
+        }
+
+        @Override
+        public void onClick(View v) {
+            clickListener.onItemClick(getAdapterPosition(), v);
         }
     }
 

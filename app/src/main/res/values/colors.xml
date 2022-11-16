@@ -7,5 +7,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="grey">#d1cdcd</color>
-
+    <color name="red">#e74c3c</color>
+    <color name="green">#27ae60</color>
+    <color name="light_grey">#e5e5e5</color>
+    <color name="translucent">#99000000</color>
 </resources>

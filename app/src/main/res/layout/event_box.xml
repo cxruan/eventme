@@ -15,40 +15,53 @@
 
         <TextView
             android:id="@+id/name"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Halloween Party"
             android:textColor="@color/black"
             android:textSize="24dp"
             android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/costIcon"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
+
+        <ImageView
+            android:id="@+id/costIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginRight="-5dp"
+            android:src="@drawable/ic_baseline_attach_money_24"
+            app:tint="@color/primary"
+            app:layout_constraintTop_toTopOf="@id/cost"
+            app:layout_constraintEnd_toStartOf="@id/cost"
+            />
+
+        <TextView
+            android:id="@+id/cost"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="15"
+            android:textColor="@color/primary"
+            android:layout_marginRight="10dp"
+            android:textSize="18dp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/name"
+            />
+
+        <TextView
+            android:id="@+id/distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1.5 km"
             android:layout_marginTop="5dp"
             android:layout_marginRight="10dp"
-            android:orientation="horizontal"
+            android:textSize="14dp"
+            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_baseline_attach_money_24"
-                app:tint="@color/primary" />
-
-            <TextView
-                android:id="@+id/cost"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="-5dp"
-                android:text="15"
-                android:textColor="@color/primary"
-                android:textSize="18dp"
-                android:textStyle="bold" />
-        </LinearLayout>
+            app:layout_constraintTop_toBottomOf="@id/cost"
+            />
 
         <LinearLayout
             android:id="@+id/firstRow"
