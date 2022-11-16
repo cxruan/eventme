@@ -196,7 +196,7 @@ public class MapFragment extends Fragment implements
         }
     }
 
-    private boolean isLocationPermissionGranted() {
+    public boolean isLocationPermissionGranted() {
         return ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
