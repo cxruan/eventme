@@ -1,0 +1,19 @@
+{
+  "name": "users/3lyuq517A3oBThK55phtmFSL26pi/image:50",
+  "bucket": "events-me-1311e.appspot.com",
+  "metageneration": 1,
+  "generation": 1668588595651,
+  "contentType": "application/octet-stream",
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "downloadTokens": [
+    "36cbb056-0b60-4fe3-85c3-e9fb9d39f3e8"
+  ],
+  "etag": "5as3S41iaRkKnezNjPd3Pt9HbUk",
+  "customMetadata": {},
+  "timeCreated": "2022-11-16T08:49:55.651Z",
+  "updated": "2022-11-16T08:49:55.651Z",
+  "size": 105421,
+  "md5Hash": "M4LDIm3egQwu08LvAkOxlQ==",
+  "crc32c": "2851354452"
+}

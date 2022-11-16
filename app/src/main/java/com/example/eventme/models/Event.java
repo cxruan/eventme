@@ -33,6 +33,11 @@ public class Event {
         // Default constructor required for calls to DataSnapshot.getValue(Event.class)
     }
 
+    // Used for generating Event tests
+    public Event(String eventId) {
+        this.eventId = eventId;
+    }
+
     // Firebase Database populated fields
     public String getEventId() {
         return eventId;
