@@ -2,18 +2,14 @@ package com.example.eventme.viewmodels;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.Observer;
 
 import com.example.eventme.models.Event;
 import com.example.eventme.models.User;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 
 import org.junit.Before;
@@ -27,11 +23,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ProfileFragmentViewModelTest {
+public class ProfileFragmentViewModelUnitTest {
     List<Event> sampleEvents;
 
     @Rule
