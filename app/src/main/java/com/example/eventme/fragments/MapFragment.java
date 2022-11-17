@@ -144,6 +144,7 @@ public class MapFragment extends Fragment implements
         mMap.setOnMapClickListener(this);
     }
 
+    @SuppressLint("MissingPermission")
     private void loadMapData() {
         try {
             FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
@@ -184,6 +185,7 @@ public class MapFragment extends Fragment implements
 
     }
 
+    @SuppressLint("MissingPermission")
     private void enableMyLocation() {
         try {
             // 1. Check if permissions are granted, if so, enable the my location layer

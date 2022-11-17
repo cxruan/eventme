@@ -1,5 +1,6 @@
 package com.example.eventme.fragments;
 
+import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -51,6 +52,7 @@ public class ProfileFragment extends Fragment {
         return binding.getRoot();
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
