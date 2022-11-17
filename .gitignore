@@ -15,3 +15,4 @@
 local.properties
 database-debug.log
 ui-debug.log
+firebase-debug.log

@@ -2,6 +2,7 @@ package com.example.eventme.fragments;
 
 import static androidx.appcompat.content.res.AppCompatResources.getColorStateList;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
@@ -187,6 +188,7 @@ public class ExploreFragment extends Fragment {
         return false;
     }
 
+    @SuppressLint("MissingPermission")
     private void loadSearchResults() {
         mListViewModel.clearEventData();
 
