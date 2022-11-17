@@ -40,6 +40,10 @@ public class MapFragmentViewModel extends ViewModel {
         mDatabase.getReference().child("events").get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 HashMap<String, Event> events = new HashMap<>();
+
+                if (task.getResult().getChildrenCount() == 0)
+                    eventsMapData.setValue(events);
+
                 for (DataSnapshot ds : task.getResult().getChildren()) {
                     Event event = ds.getValue(Event.class);
                     events.put(event.getEventId(), event);

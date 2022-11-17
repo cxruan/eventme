@@ -25,6 +25,7 @@ import com.example.eventme.utils.GlideApp;
 import com.example.eventme.utils.Utils;
 import com.example.eventme.viewmodels.EventListFragmentViewModel;
 import com.example.eventme.viewmodels.ProfileFragmentViewModel;
+import com.example.eventme.viewmodels.ProfileFragmentViewModelFactory;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
@@ -77,7 +78,7 @@ public class ProfileFragment extends Fragment {
         binding.infoRow.setVisibility(View.INVISIBLE);
 
         // Subscribe to ViewModel data
-        mViewModel = new ViewModelProvider(requireActivity()).get(ProfileFragmentViewModel.class);
+        mViewModel = new ViewModelProvider(requireActivity(), new ProfileFragmentViewModelFactory(mAuth, mDatabase)).get(ProfileFragmentViewModel.class);
         mListViewModel = new ViewModelProvider(this).get(EventListFragmentViewModel.class);
 
         mViewModel.getUserData().observe(getViewLifecycleOwner(), user -> {

@@ -6,7 +6,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.eventme.BuildConfig;
 import com.example.eventme.models.Event;
 import com.example.eventme.models.User;
 import com.google.firebase.auth.FirebaseAuth;
@@ -21,31 +20,19 @@ public class ProfileFragmentViewModel extends ViewModel {
     private FirebaseAuth mAuth;
     private FirebaseDatabase mDatabase;
 
-    private MutableLiveData<User> userData;
-    private MutableLiveData<List<Event>> registeredEventsData;
+    private MutableLiveData<User> userData = new MutableLiveData<>(new User());
+    private MutableLiveData<List<Event>> registeredEventsData = new MutableLiveData<>(new ArrayList<>());
 
-    public ProfileFragmentViewModel() {
-        mAuth = FirebaseAuth.getInstance();
-        mDatabase = FirebaseDatabase.getInstance();
-        if (BuildConfig.DEBUG) {
-            mAuth.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_AUTH_PORT);
-            mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
-        }
+    public ProfileFragmentViewModel(FirebaseAuth auth, FirebaseDatabase database) {
+        mAuth = auth;
+        mDatabase = database;
     }
 
     public LiveData<User> getUserData() {
-        if (userData == null) {
-            userData = new MutableLiveData<User>();
-            loadAllData();
-        }
         return userData;
     }
 
     public LiveData<List<Event>> getRegisteredEventsData() {
-        if (registeredEventsData == null) {
-            registeredEventsData = new MutableLiveData<List<Event>>();
-            loadAllData();
-        }
         return registeredEventsData;
     }
 
@@ -71,6 +58,11 @@ public class ProfileFragmentViewModel extends ViewModel {
 
                     // Get registered events
                     List<Event> events = new ArrayList<>();
+
+                    // Handle empty events case
+                    if (user.getRegisteredEvents().isEmpty())
+                        registeredEventsData.setValue(events);
+
                     for (String id : user.getRegisteredEvents().keySet()) {
                         mDatabase.getReference().child("events").child(id).get().addOnCompleteListener(eventTask -> {
                             if (eventTask.isSuccessful()) {
