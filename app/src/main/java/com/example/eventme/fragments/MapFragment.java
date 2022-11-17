@@ -34,6 +34,7 @@ import com.example.eventme.databinding.FragmentMapBinding;
 import com.example.eventme.models.Event;
 import com.example.eventme.viewmodels.EventListFragmentViewModel;
 import com.example.eventme.viewmodels.MapFragmentViewModel;
+import com.example.eventme.viewmodels.MapFragmentViewModelFactory;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -108,7 +109,7 @@ public class MapFragment extends Fragment implements
         }
 
         // Binding view models
-        mViewModel = new ViewModelProvider(requireActivity()).get(MapFragmentViewModel.class);
+        mViewModel = new ViewModelProvider(requireActivity(), new MapFragmentViewModelFactory(mDatabase)).get(MapFragmentViewModel.class);
         mListViewModel = new ViewModelProvider(this).get(EventListFragmentViewModel.class);
 
         // Permission request dialogue callback
@@ -147,7 +148,7 @@ public class MapFragment extends Fragment implements
         try {
             FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
             fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-                if(location == null)
+                if (location == null)
                     return;
                 // Clear map and view model observers
                 mViewModel.getEventsData().removeObservers(getViewLifecycleOwner());

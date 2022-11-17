@@ -18,13 +18,10 @@ public class MapFragmentViewModel extends ViewModel {
 
     private FirebaseDatabase mDatabase;
 
-    private MutableLiveData<HashMap<String, Event>> eventsMapData = new MutableLiveData<>();
+    private MutableLiveData<HashMap<String, Event>> eventsMapData = new MutableLiveData<>(new HashMap<>());
 
-    public MapFragmentViewModel() {
-        mDatabase = FirebaseDatabase.getInstance();
-        if (BuildConfig.DEBUG) {
-            mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
-        }
+    public MapFragmentViewModel(FirebaseDatabase database) {
+        mDatabase = database;
     }
 
     public LiveData<HashMap<String, Event>> getEventsData() {
@@ -33,6 +30,10 @@ public class MapFragmentViewModel extends ViewModel {
 
     public Event getEventById(String eventId) {
         return eventsMapData.getValue().get(eventId);
+    }
+
+    public void setEventsData(HashMap<String, Event> events) {
+        eventsMapData.setValue(events);
     }
 
     public void loadAllData() {
