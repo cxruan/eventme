@@ -99,10 +99,11 @@ public class LoginFragment extends Fragment {
             Log.d(TAG, "signIn:onComplete:" + task.isSuccessful());
 
             if (task.isSuccessful()) {
+                Toast.makeText(getContext(), "Successfully logged in", Toast.LENGTH_SHORT).show();
                 sendToNavActivity();
             } else {
                 Log.w(TAG, "signInWithEmailAndPassword:failure", task.getException());
-                Toast.makeText(getContext(), "Sign-in Failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Failed to log in", Toast.LENGTH_SHORT).show();
             }
         });
     }
