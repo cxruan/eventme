@@ -9,33 +9,32 @@ import static androidx.test.espresso.matcher.ViewMatchers.*;
 import android.util.Log;
 import android.widget.DatePicker;
 
-import androidx.fragment.app.testing.FragmentScenario;
-import androidx.navigation.Navigation;
-import androidx.navigation.testing.TestNavHostController;
-import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.action.ViewActions;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
 import static org.junit.Assert.*;
 
-import com.example.eventme.fragments.SignUpFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
-public class SignUpFragmentInstrumentedTest {
+public class SignUpEspressoTest {
     private static final String TAG = "SignUpFragmentInstrumentedTest";
 
     private FirebaseAuth mAuth;
     private FirebaseDatabase mDatabase;
-    private TestNavHostController navController;
+
+    @Rule
+    public ActivityScenarioRule<MainActivity> activityScenarioRule = new ActivityScenarioRule<>(MainActivity.class);
 
     @Before
     public void setUp() {
@@ -46,18 +45,7 @@ public class SignUpFragmentInstrumentedTest {
         mDatabase = FirebaseDatabase.getInstance();
         mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
 
-        // Create a TestNavHostController
-        navController = new TestNavHostController(ApplicationProvider.getApplicationContext());
-
-        FragmentScenario<SignUpFragment> signUpScenario = FragmentScenario.launchInContainer(SignUpFragment.class);
-        signUpScenario.onFragment(fragment -> {
-            // Set the graph on the TestNavHostController
-            navController.setGraph(R.navigation.signin_nav_graph);
-            navController.setCurrentDestination(R.id.signUpFragment);
-
-            // Make the NavController available via the findNavController() APIs
-            Navigation.setViewNavController(fragment.requireView(), navController);
-        });
+        onView(withId(R.id.signUp)).perform(click()); // Go to sign-up first
     }
 
     @Test
@@ -79,6 +67,7 @@ public class SignUpFragmentInstrumentedTest {
 
         // Sign-up will automatically sign in the user
         assertNotNull(mAuth.getCurrentUser());
+        onView(withId(R.id.ExploreTitle)).check(matches(isDisplayed())); // Logged-in user will be directed to ExploreFragment
 
         // Delete newly created user after the test
         FirebaseUser user = mAuth.getCurrentUser();
