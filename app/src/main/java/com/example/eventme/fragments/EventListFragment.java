@@ -1,6 +1,7 @@
 package com.example.eventme.fragments;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -52,6 +53,7 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
         return binding.getRoot();
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -145,6 +147,7 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
                 || ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         String value = (String) parent.getItemAtPosition(position);

@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.example.eventme.BuildConfig;
 import com.example.eventme.R;
 import com.example.eventme.databinding.FragmentLoginBinding;
 import com.google.firebase.auth.FirebaseAuth;
@@ -38,6 +39,9 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
+        if (BuildConfig.DEBUG) {
+            mAuth.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_AUTH_PORT);
+        }
 
         // Click listeners
         binding.signIn.setOnClickListener(this::onClickSignIn);

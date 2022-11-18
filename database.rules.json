@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "users": {
+      "$UID": {
+        ".read": "auth.uid == $UID",
+        ".write": "auth.uid == $UID"
+      },
+    },
+    "events": {
+      ".read": "true",
+      ".indexOn": ["nameLowercase", "sponsorLowercase", "locationLowercase", "types/music", "types/arts", "types/food & drinks", "types/outdoors"],
+      "$eventID": {
+        "registeredUsers": {
+          "$UID": {
+            ".write": "auth.uid == $UID"
+          }
+        }
+      }
+    }
+  }
+}

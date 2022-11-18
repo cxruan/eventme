@@ -43,7 +43,13 @@ public class Utils {
     public static Integer[] parseTime(String timeStr) {
         String[] timeArr = timeStr.toLowerCase().split("-");
 
-        String startTimeStr = timeArr[0].substring(0, timeArr[0].length() - 2);
+        String startTimeStr;
+        if (timeArr[0].endsWith("pm") || timeArr[0].endsWith("am"))
+            startTimeStr = timeArr[0].substring(0, timeArr[0].length() - 2);
+        else
+            startTimeStr = timeArr[0];
+
+
         String[] startTime = startTimeStr.split(":");
         Integer startHour = Integer.valueOf(startTime[0]);
 
@@ -53,7 +59,12 @@ public class Utils {
         if (startTime.length == 2)
             startMin = Integer.valueOf(startTime[1]);
 
-        String endTimeStr = timeArr[1].substring(0, timeArr[1].length() - 2);
+        String endTimeStr;
+        if (timeArr[1].endsWith("pm") || timeArr[1].endsWith("am"))
+            endTimeStr = timeArr[1].substring(0, timeArr[1].length() - 2);
+        else
+            endTimeStr = timeArr[1];
+
         String[] endTime = endTimeStr.split(":");
         Integer endHour = Integer.valueOf(endTime[0]);
 

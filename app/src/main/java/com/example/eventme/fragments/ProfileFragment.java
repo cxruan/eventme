@@ -1,5 +1,6 @@
 package com.example.eventme.fragments;
 
+import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.eventme.BuildConfig;
 import com.example.eventme.R;
 import com.example.eventme.databinding.FragmentProfileBinding;
 import com.example.eventme.models.Event;
@@ -23,6 +25,7 @@ import com.example.eventme.utils.GlideApp;
 import com.example.eventme.utils.Utils;
 import com.example.eventme.viewmodels.EventListFragmentViewModel;
 import com.example.eventme.viewmodels.ProfileFragmentViewModel;
+import com.example.eventme.viewmodels.ProfileFragmentViewModelFactory;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
@@ -50,6 +53,7 @@ public class ProfileFragment extends Fragment {
         return binding.getRoot();
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -57,6 +61,11 @@ public class ProfileFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance();
         mStorage = FirebaseStorage.getInstance();
+        if (BuildConfig.DEBUG) {
+            mAuth.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_AUTH_PORT);
+            mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
+            mStorage.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_STORAGE_PORT);
+        }
 
         // If unauthenticated, prompt to log in or sign up
         if (mAuth.getCurrentUser() == null) {
@@ -69,7 +78,7 @@ public class ProfileFragment extends Fragment {
         binding.infoRow.setVisibility(View.INVISIBLE);
 
         // Subscribe to ViewModel data
-        mViewModel = new ViewModelProvider(requireActivity()).get(ProfileFragmentViewModel.class);
+        mViewModel = new ViewModelProvider(requireActivity(), new ProfileFragmentViewModelFactory(mAuth, mDatabase)).get(ProfileFragmentViewModel.class);
         mListViewModel = new ViewModelProvider(this).get(EventListFragmentViewModel.class);
 
         mViewModel.getUserData().observe(getViewLifecycleOwner(), user -> {

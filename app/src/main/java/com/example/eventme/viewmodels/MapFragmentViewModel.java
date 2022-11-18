@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.eventme.BuildConfig;
 import com.example.eventme.models.Event;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.FirebaseDatabase;
@@ -17,10 +18,10 @@ public class MapFragmentViewModel extends ViewModel {
 
     private FirebaseDatabase mDatabase;
 
-    private MutableLiveData<HashMap<String, Event>> eventsMapData = new MutableLiveData<>();
+    private MutableLiveData<HashMap<String, Event>> eventsMapData = new MutableLiveData<>(new HashMap<>());
 
-    public MapFragmentViewModel() {
-        mDatabase = FirebaseDatabase.getInstance();
+    public MapFragmentViewModel(FirebaseDatabase database) {
+        mDatabase = database;
     }
 
     public LiveData<HashMap<String, Event>> getEventsData() {
@@ -31,10 +32,18 @@ public class MapFragmentViewModel extends ViewModel {
         return eventsMapData.getValue().get(eventId);
     }
 
+    public void setEventsData(HashMap<String, Event> events) {
+        eventsMapData.setValue(events);
+    }
+
     public void loadAllData() {
         mDatabase.getReference().child("events").get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 HashMap<String, Event> events = new HashMap<>();
+
+                if (task.getResult().getChildrenCount() == 0)
+                    eventsMapData.setValue(events);
+
                 for (DataSnapshot ds : task.getResult().getChildren()) {
                     Event event = ds.getValue(Event.class);
                     events.put(event.getEventId(), event);
