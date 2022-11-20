@@ -135,17 +135,20 @@ public class ExploreEspressoTest {
         onView(withId(R.id.typeFilter)).perform(click());
         onView(withText("Music")).perform(click());
         onView(withText("OK")).perform(click());
-        onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventTypeAssertion(1, "USC", "Music"));
+        String[] types = {"Music"};
+        onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(1, "USC", "Cost", types));
     }
 
     @Test
-    public void explore_typeFilterOutdoors() {
+    public void explore_typeFilterMultiple() {
         onView(withId(R.id.searchBar)).perform(typeText("USC"));
         onView(withId(R.id.searchBtn)).perform(click());
         onView(withId(R.id.typeFilter)).perform(click());
+        onView(withText("Arts")).perform(click());
         onView(withText("Outdoors")).perform(click());
         onView(withText("OK")).perform(click());
-        onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventTypeAssertion(4, "USC", "Outdoors"));
+        String[] types = {"Arts", "Outdoors"};
+        onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(12, "USC", "Cost", types));
     }
 
     @Test
