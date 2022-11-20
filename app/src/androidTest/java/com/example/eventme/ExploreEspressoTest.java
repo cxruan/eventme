@@ -5,6 +5,8 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.contrib.PickerActions.setDate;
+import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withSpinnerText;
@@ -16,8 +18,10 @@ import static org.hamcrest.Matchers.is;
 
 import android.app.Activity;
 import android.view.View;
+import android.widget.DatePicker;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
@@ -159,6 +163,15 @@ public class ExploreEspressoTest {
         onView(withText("Outdoors")).perform(click());
         onView(withText("OK")).perform(click());
         onView(withId(R.id.emptyResultText)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void explore_directToRegister() {
+        onView(withId(R.id.searchBar)).perform(typeText("USC"));
+        onView(withId(R.id.searchBtn)).perform(click());
+        onView(withId(R.id.eventList))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+        onView(withId(R.id.name)).check(matches(isDisplayed()));
     }
 
 
