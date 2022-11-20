@@ -113,6 +113,7 @@ public class ExploreFragment extends Fragment {
         loadSearchResults();
     }
 
+    @SuppressWarnings("deprecation")
     private void onClickDateFilter(View view) {
         mRangeDatePicker.show(getFragmentManager(), "MATERIAL_DATE_PICKER");
     }
