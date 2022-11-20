@@ -64,7 +64,7 @@ public class ExploreEspressoTest {
 
     @Test
     public void exploreFragment_isDisplayed() {
-        onView(withId(R.id.container)).check(matches(isDisplayed()));
+        onView(withId(R.id.ExploreTitle)).check(matches(isDisplayed()));
     }
 
     @Test
@@ -91,40 +91,40 @@ public class ExploreEspressoTest {
     @Test
     public void explore_sortByCost() {
         onView(withId(R.id.searchBar)).perform(typeText("USC"));
+        onView(withId(R.id.searchBtn)).perform(click());
         onView(withId(R.id.sortBySpinner)).perform(click());
         onData(allOf(is(instanceOf(String.class)), is("Cost"))).perform(click());
         onView(withId(R.id.sortBySpinner)).check(matches(withSpinnerText("Cost")));
-        onView(withId(R.id.searchBtn)).perform(click());
         onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(9, "USC", "Cost"));
     }
 
     @Test
     public void explore_sortAlphabetically() {
         onView(withId(R.id.searchBar)).perform(typeText("USC"));
+        onView(withId(R.id.searchBtn)).perform(click());
         onView(withId(R.id.sortBySpinner)).perform(click());
         onData(allOf(is(instanceOf(String.class)), is("Alphabetical"))).perform(click());
         onView(withId(R.id.sortBySpinner)).check(matches(withSpinnerText("Alphabetical")));
-        onView(withId(R.id.searchBtn)).perform(click());
         onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(9, "USC", "Alphabetical"));
     }
 
     @Test
     public void explore_sortByDate() {
         onView(withId(R.id.searchBar)).perform(typeText("USC"));
+        onView(withId(R.id.searchBtn)).perform(click());
         onView(withId(R.id.sortBySpinner)).perform(click());
         onData(allOf(is(instanceOf(String.class)), is("Date"))).perform(click());
         onView(withId(R.id.sortBySpinner)).check(matches(withSpinnerText("Date")));
-        onView(withId(R.id.searchBtn)).perform(click());
         onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(9, "USC", "Date"));
     }
 
     @Test
     public void explore_sortByLocation() {
         onView(withId(R.id.searchBar)).perform(typeText("USC"));
+        onView(withId(R.id.searchBtn)).perform(click());
         onView(withId(R.id.sortBySpinner)).perform(click());
         onData(allOf(is(instanceOf(String.class)), is("Location"))).perform(click());
         onView(withId(R.id.sortBySpinner)).check(matches(withSpinnerText("Location")));
-        onView(withId(R.id.searchBtn)).perform(click());
         onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(9, "USC", "Location"));
     }
 
@@ -144,11 +144,11 @@ public class ExploreEspressoTest {
         onView(withId(R.id.searchBar)).perform(typeText("USC"));
         onView(withId(R.id.searchBtn)).perform(click());
         onView(withId(R.id.typeFilter)).perform(click());
-        onView(withText("Arts")).perform(click());
+        onView(withText("Food & Drinks")).perform(click());
         onView(withText("Outdoors")).perform(click());
         onView(withText("OK")).perform(click());
-        String[] types = {"Arts", "Outdoors"};
-        onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(12, "USC", "Cost", types));
+        String[] types = {"Food & Drinks", "Outdoors"};
+        onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(1, "USC", "Cost", types));
     }
 
     @Test
