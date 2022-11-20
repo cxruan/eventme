@@ -3,6 +3,7 @@ package com.example.eventme;
 import static androidx.test.espresso.Espresso.*;
 import static androidx.test.espresso.action.ViewActions.*;
 import static androidx.test.espresso.assertion.ViewAssertions.*;
+import static androidx.test.espresso.contrib.PickerActions.setDate;
 import static androidx.test.espresso.matcher.ViewMatchers.*;
 
 
@@ -20,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,12 +42,16 @@ public class SignUpEspressoTest {
     public void setUp() {
         mAuth = FirebaseAuth.getInstance();
         mAuth.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_AUTH_PORT);
-        mAuth.signOut();
 
         mDatabase = FirebaseDatabase.getInstance();
         mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
 
         onView(withId(R.id.signUp)).perform(click()); // Go to sign-up first
+    }
+
+    @After
+    public void tearDown() {
+        mAuth.signOut();
     }
 
     @Test
@@ -59,7 +65,7 @@ public class SignUpEspressoTest {
         onView(withId(R.id.lastName)).perform(typeText("Jordan"), ViewActions.closeSoftKeyboard());
         onView(withId(R.id.email)).perform(typeText("xyz@abc.com"), ViewActions.closeSoftKeyboard());
         onView(withId(R.id.birthday)).perform(click());
-        onView(isAssignableFrom(DatePicker.class)).perform(TestUtils.setDate(1983, 2, 4));
+        onView(isAssignableFrom(DatePicker.class)).perform(setDate(1983, 2, 4));
         onView(withText("OK")).perform(click());
         onView(withId(R.id.password)).perform(typeText("123456"), ViewActions.closeSoftKeyboard());
         onView(withId(R.id.reEnterPassword)).perform(typeText("123456"), ViewActions.closeSoftKeyboard());
@@ -95,7 +101,7 @@ public class SignUpEspressoTest {
         onView(withId(R.id.lastName)).perform(typeText("Jordan"), ViewActions.closeSoftKeyboard());
         onView(withId(R.id.email)).perform(typeText("abc@xyz.com"), ViewActions.closeSoftKeyboard());
         onView(withId(R.id.birthday)).perform(click());
-        onView(isAssignableFrom(DatePicker.class)).perform(TestUtils.setDate(1983, 2, 4));
+        onView(isAssignableFrom(DatePicker.class)).perform(setDate(1983, 2, 4));
         onView(withText("OK")).perform(click());
         onView(withId(R.id.password)).perform(typeText("123456"), ViewActions.closeSoftKeyboard());
         onView(withId(R.id.reEnterPassword)).perform(typeText("123456"), ViewActions.closeSoftKeyboard());
