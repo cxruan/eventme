@@ -80,6 +80,12 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestImplementation 'androidx.test:rules:1.4.0'
 
+    androidTestImplementation ('com.android.support.test.espresso:espresso-contrib:2.0') {
+        exclude group: 'com.android.support', module: 'appcompat'
+        exclude group: 'com.android.support', module: 'support-v4'
+        exclude module: 'recyclerview-v7'
+    }
+
     androidTestImplementation "androidx.test.ext:junit:1.1.4"
     androidTestImplementation "androidx.navigation:navigation-testing:2.5.3"
     debugImplementation "androidx.fragment:fragment-testing:1.5.4"

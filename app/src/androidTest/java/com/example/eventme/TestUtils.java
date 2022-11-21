@@ -125,7 +125,7 @@ public class TestUtils {
             if (types != null) {
                 for (Event event : events) {
                     for (String type : types) {
-                        assertThat(event.getTypes().containsKey(type), is(true));
+                        assertThat(event.getTypes().containsKey(type.toLowerCase()), is(true));
                     }
                 }
             }
