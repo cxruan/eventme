@@ -30,10 +30,13 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 
@@ -45,8 +48,8 @@ public class ExploreFragment extends Fragment {
     private EventListFragmentViewModel mListViewModel;
     private FirebaseDatabase mDatabase;
 
-    private String[] searchKeys = {"nameLowercase", "locationLowercase", "sponsorLowercase"};
-    private String[] eventTypes = {"Music", "Arts", "Food & Drinks", "Outdoors"};
+    private final String[] searchKeys = {"nameLowercase", "locationLowercase", "sponsorLowercase"};
+    private final String[] eventTypes = {"Music", "Arts", "Food & Drinks", "Outdoors"};
     boolean[] selectedTypes = new boolean[eventTypes.length];
     private MaterialDatePicker<Pair<Long, Long>> mRangeDatePicker;
     private String mStartDate;
@@ -83,14 +86,32 @@ public class ExploreFragment extends Fragment {
         binding.typeFilter.setOnClickListener(this::onClickTypeFilter);
         binding.dateFilter.setOnClickListener(this::onClickDateFilter);
         mRangeDatePicker.addOnPositiveButtonClickListener(this::onSelectRangeDate);
+
+        boolean containsTrue = false;
+        for (int j = 0; j < selectedTypes.length; j++) {
+            if (selectedTypes[j]) {
+                containsTrue = true;
+                break;
+            }
+        }
+        if (containsTrue)
+            enableTypeChip();
+
+        if (mStartDate != null && mEndDate != null)
+            enableRangeDateChip();
     }
 
     private void onSelectRangeDate(Pair<Long, Long> longLongPair) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd", Locale.US);
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         mStartDate = sdf.format(new Date(longLongPair.first));
         mEndDate = sdf.format(new Date(longLongPair.second));
 
+        enableRangeDateChip();
+        loadSearchResults();
+    }
+
+    private void enableRangeDateChip() {
         binding.dateFilter.setText(mStartDate + " - " + mEndDate);
         binding.dateFilter.setChipBackgroundColor(getColorStateList(getContext(), R.color.primary));
         binding.dateFilter.setChipIconTint(getColorStateList(getContext(), R.color.white));
@@ -98,19 +119,23 @@ public class ExploreFragment extends Fragment {
         binding.dateFilter.setTextColor(getColorStateList(getContext(), R.color.white));
         binding.dateFilter.setCloseIconResource(R.drawable.ic_baseline_close_24);
         binding.dateFilter.setOnCloseIconClickListener(this::clearRangeFilter);
-        loadSearchResults();
     }
 
     private void clearRangeFilter(View view) {
         mStartDate = null;
         mEndDate = null;
+
+        disableRangeDateChip();
+        loadSearchResults();
+    }
+
+    private void disableRangeDateChip() {
         binding.dateFilter.setText("Anytime");
         binding.dateFilter.setChipBackgroundColor(getColorStateList(getContext(), R.color.light_grey));
         binding.dateFilter.setChipIconTint(getColorStateList(getContext(), R.color.black));
         binding.dateFilter.setCloseIconTint(getColorStateList(getContext(), R.color.black));
         binding.dateFilter.setTextColor(getColorStateList(getContext(), R.color.black));
         binding.dateFilter.setCloseIconResource(R.drawable.ic_baseline_keyboard_arrow_down_24);
-        loadSearchResults();
     }
 
     @SuppressWarnings("deprecation")
@@ -145,17 +170,10 @@ public class ExploreFragment extends Fragment {
                         break;
                     }
                 }
-                if (containsTrue) {
-                    binding.typeFilter.setChipBackgroundColor(getColorStateList(getContext(), R.color.primary));
-                    binding.typeFilter.setChipIconTint(getColorStateList(getContext(), R.color.white));
-                    binding.typeFilter.setCloseIconTint(getColorStateList(getContext(), R.color.white));
-                    binding.typeFilter.setTextColor(getColorStateList(getContext(), R.color.white));
-                } else {
-                    binding.typeFilter.setChipBackgroundColor(getColorStateList(getContext(), R.color.light_grey));
-                    binding.typeFilter.setChipIconTint(getColorStateList(getContext(), R.color.black));
-                    binding.typeFilter.setCloseIconTint(getColorStateList(getContext(), R.color.black));
-                    binding.typeFilter.setTextColor(getColorStateList(getContext(), R.color.black));
-                }
+                if (containsTrue)
+                    enableTypeChip();
+                else
+                    disableTypeChip();
                 if (mListViewModel.getEventsData().getValue().isEmpty())
                     loadSearchResultsByTypes();
                 else
@@ -171,11 +189,22 @@ public class ExploreFragment extends Fragment {
         for (int j = 0; j < selectedTypes.length; j++) {
             selectedTypes[j] = false;
         }
+        disableTypeChip();
+        loadSearchResults();
+    }
+
+    private void enableTypeChip() {
+        binding.typeFilter.setChipBackgroundColor(getColorStateList(getContext(), R.color.primary));
+        binding.typeFilter.setChipIconTint(getColorStateList(getContext(), R.color.white));
+        binding.typeFilter.setCloseIconTint(getColorStateList(getContext(), R.color.white));
+        binding.typeFilter.setTextColor(getColorStateList(getContext(), R.color.white));
+    }
+
+    private void disableTypeChip() {
         binding.typeFilter.setChipBackgroundColor(getColorStateList(getContext(), R.color.light_grey));
         binding.typeFilter.setChipIconTint(getColorStateList(getContext(), R.color.black));
         binding.typeFilter.setCloseIconTint(getColorStateList(getContext(), R.color.black));
         binding.typeFilter.setTextColor(getColorStateList(getContext(), R.color.black));
-        loadSearchResults();
     }
 
     private void onClickSearch(View view) {
@@ -195,12 +224,15 @@ public class ExploreFragment extends Fragment {
 
         String term = binding.searchBar.getText().toString().toLowerCase();
         for (String searchKey : searchKeys) {
-            mDatabase.getReference().child("events").orderByChild(searchKey).startAt(term).endAt(term + "\uf8ff").get().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
+            mDatabase.getReference().child("events").orderByChild(searchKey).startAt(term).endAt(term + "\uf8ff").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (getActivity() == null)
+                        return;
                     FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
                     try {
                         fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-                            for (DataSnapshot data : task.getResult().getChildren()) {
+                            for (DataSnapshot data : snapshot.getChildren()) {
                                 Event event = data.getValue(Event.class);
                                 if (location != null) {
                                     double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
@@ -213,8 +245,11 @@ public class ExploreFragment extends Fragment {
                     } catch (SecurityException e) {
                         Log.e("Exception: %s", e.getMessage(), e);
                     }
-                } else {
-                    Log.e(TAG, "loadSearchResults: error loading events", task.getException());
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e(TAG, "loadSearchResults: error loading events", error.toException());
                 }
             });
         }
@@ -225,14 +260,18 @@ public class ExploreFragment extends Fragment {
 
         for (int j = 0; j < selectedTypes.length; j++) {
             if (selectedTypes[j]) {
-                mDatabase.getReference().child("events").orderByChild("types/" + eventTypes[j].toLowerCase()).equalTo(true).get().addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        for (DataSnapshot data : task.getResult().getChildren()) {
+                mDatabase.getReference().child("events").orderByChild("types/" + eventTypes[j].toLowerCase()).equalTo(true).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot data : snapshot.getChildren()) {
                             Event event = data.getValue(Event.class);
                             mListViewModel.addEventsData(event);
                         }
-                    } else {
-                        Log.e(TAG, "loadSearchResults: error loading events", task.getException());
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e(TAG, "loadSearchResults: error loading events", error.toException());
                     }
                 });
             }
@@ -252,9 +291,7 @@ public class ExploreFragment extends Fragment {
     private boolean checkDate(Event event) {
         if (mStartDate == null || mEndDate == null)
             return true;
-        if (event.getDate().compareTo(mStartDate) >= 0 && event.getDate().compareTo(mEndDate) <= 0)
-            return true;
-        return false;
+        return event.getDate().compareTo(mStartDate) >= 0 && event.getDate().compareTo(mEndDate) <= 0;
     }
 }
 
