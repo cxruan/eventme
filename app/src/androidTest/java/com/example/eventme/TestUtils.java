@@ -1,6 +1,7 @@
 package com.example.eventme;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.actionWithAssertions;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -13,6 +14,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.is;
 
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
@@ -24,6 +26,11 @@ import androidx.test.espresso.PerformException;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.ViewAssertion;
+import androidx.test.espresso.action.CoordinatesProvider;
+import androidx.test.espresso.action.GeneralLocation;
+import androidx.test.espresso.action.GeneralSwipeAction;
+import androidx.test.espresso.action.Press;
+import androidx.test.espresso.action.Swipe;
 import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.espresso.util.HumanReadables;
 
@@ -185,5 +192,25 @@ public class TestUtils {
 
     private static ViewParent findParent(ViewParent view) {
         return view.getParent();
+    }
+
+    public static ViewAction swipeToTop() {
+        return actionWithAssertions(
+                new GeneralSwipeAction(Swipe.FAST, GeneralLocation.CENTER, new CoordinatesProvider() {
+                    @Override
+                    public float[] calculateCoordinates(View view) {
+                        return new float[]{0, 0};
+                    }
+                }, Press.FINGER));
+    }
+
+    public static ViewAction swipeToBottom() {
+        return actionWithAssertions(
+                new GeneralSwipeAction(Swipe.FAST, GeneralLocation.CENTER, new CoordinatesProvider() {
+                    @Override
+                    public float[] calculateCoordinates(View view) {
+                        return new float[]{0, 2000};
+                    }
+                }, Press.FINGER));
     }
 }
