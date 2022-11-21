@@ -99,6 +99,7 @@ public class ProfileEspressoTest {
         onView(withId(R.id.eventList)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         onView(withId(R.id.button)).perform(click()); // Click on the register button
         onView(isRoot()).perform(pressBack());
+        onView(isRoot()).perform(TestUtils.waitFor(600));
 
         onView(withId(R.id.profileFragment)).perform(click()); // Go to profile fragment
         onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(1)); // There should be 1 event registered
@@ -107,6 +108,7 @@ public class ProfileEspressoTest {
         onView(withId(R.id.button)).perform(click()); // Click on the unregister button
         onView(withText("YES")).perform(click());
         onView(isRoot()).perform(pressBack());
+        onView(isRoot()).perform(TestUtils.waitFor(600));
 
         onView(withId(R.id.emptyResultText)).check(matches(isDisplayed())); //There should be no events now
     }
@@ -138,15 +140,24 @@ public class ProfileEspressoTest {
 
         onView(withId(R.id.eventList)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         onView(withId(R.id.button)).perform(click()); // Click on the register button
+        onView(isRoot()).perform(TestUtils.waitFor(600));
         onView(isRoot()).perform(pressBack());
 
-        onView(withId(R.id.eventList)).perform(TestUtils.nestedScrollTo(1), RecyclerViewActions.actionOnItemAtPosition(1, click()));
+        onView(withId(R.id.eventList)).perform(TestUtils.nestedScrollTo(1));
+        onView(isRoot()).perform(TestUtils.waitFor(600));
+
+        onView(withId(R.id.eventList)).perform(RecyclerViewActions.actionOnItemAtPosition(1, click()));
         onView(withId(R.id.button)).perform(click()); // Click on the register button
+        onView(isRoot()).perform(TestUtils.waitFor(600));
         onView(isRoot()).perform(pressBack());
 
-        onView(withId(R.id.eventList)).perform(TestUtils.nestedScrollTo(2), RecyclerViewActions.actionOnItemAtPosition(2, click()));
+        onView(withId(R.id.eventList)).perform(TestUtils.nestedScrollTo(3));
+        onView(isRoot()).perform(TestUtils.waitFor(600));
+        onView(withId(R.id.eventList)).perform(RecyclerViewActions.actionOnItemAtPosition(3, click()));
         onView(withId(R.id.button)).perform(click()); // Click on the register button
+        onView(isRoot()).perform(TestUtils.waitFor(600));
         onView(isRoot()).perform(pressBack());
+        onView(isRoot()).perform(TestUtils.waitFor(600));
 
         onView(withId(R.id.profileFragment)).perform(click()); // Go to profile fragment
 
@@ -156,30 +167,33 @@ public class ProfileEspressoTest {
         onView(withId(R.id.button)).perform(click()); // Click on the unregister button
         onView(withText("YES")).perform(click());
         onView(isRoot()).perform(pressBack());
+        onView(isRoot()).perform(TestUtils.waitFor(600));
         onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(2)); // There should be 2 events registered
 
         onView(withId(R.id.eventList)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         onView(withId(R.id.button)).perform(click()); // Click on the unregister button
         onView(withText("YES")).perform(click());
         onView(isRoot()).perform(pressBack());
+        onView(isRoot()).perform(TestUtils.waitFor(600));
         onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(1)); // There should be 1 events registered
 
         onView(withId(R.id.eventList)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         onView(withId(R.id.button)).perform(click()); // Click on the unregister button
         onView(withText("YES")).perform(click());
         onView(isRoot()).perform(pressBack());
+        onView(isRoot()).perform(TestUtils.waitFor(600));
         onView(withId(R.id.emptyResultText)).check(matches(isDisplayed())); //There should be no events now
     }
 
     /**
      * Performs a test on conflicted events registration
-     *
+     * <p>
      * <ol
-     *   <li>Go to profile page and check if the user has no registered events
-     *   <li>Go the explore page and search for query "USC". 9 predetermined events should be shown
-     *   <li>Register the "USC Basketball Game" event (6th)
-     *   <li>Register the "Music Festive" event (8th) and check if conflicting dialogue is displayed
-     *   <li>Unregister the two events and check if are unregistered
+     * <li>Go to profile page and check if the user has no registered events
+     * <li>Go the explore page and search for query "USC". 9 predetermined events should be shown
+     * <li>Register the "USC Basketball Game" event (6th)
+     * <li>Register the "Music Festive" event (8th) and check if conflicting dialogue is displayed
+     * <li>Unregister the two events and check if are unregistered
      * </ol>
      */
     @Test
@@ -197,15 +211,22 @@ public class ProfileEspressoTest {
 
         onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(9)); // There should be 9 predetermined events
 
-        onView(withId(R.id.eventList)).perform(TestUtils.nestedScrollTo(5), RecyclerViewActions.actionOnItemAtPosition(5, click())); // USC Basketball Game
+        onView(withId(R.id.eventList)).perform(TestUtils.nestedScrollTo(5)); // USC Basketball Game
+        onView(isRoot()).perform(TestUtils.waitFor(600));
+        onView(withId(R.id.eventList)).perform(RecyclerViewActions.actionOnItemAtPosition(5, click()));
+
         onView(withId(R.id.button)).perform(click()); // Click on the register button
         onView(isRoot()).perform(pressBack());
+        onView(isRoot()).perform(TestUtils.waitFor(600));
 
-        onView(withId(R.id.eventList)).perform(TestUtils.nestedScrollTo(7), RecyclerViewActions.actionOnItemAtPosition(7, click())); // Music Festive
+        onView(withId(R.id.eventList)).perform(TestUtils.nestedScrollTo(7)); // Music Festival
+        onView(isRoot()).perform(TestUtils.waitFor(600));
+        onView(withId(R.id.eventList)).perform(RecyclerViewActions.actionOnItemAtPosition(7, click()));
         onView(withId(R.id.button)).perform(click()); // Click on the register button
         onView(withText("Conflicting with registered events")).check(matches(isDisplayed())); // Dialog should be displayed
         onView(withText("OK")).perform(click());
         onView(isRoot()).perform(pressBack());
+        onView(isRoot()).perform(TestUtils.waitFor(600));
 
         onView(withId(R.id.profileFragment)).perform(click()); // Go to profile fragment
         onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(2)); // There should be 2 events register
@@ -214,12 +235,15 @@ public class ProfileEspressoTest {
         onView(withId(R.id.button)).perform(click()); // Click on the unregister button
         onView(withText("YES")).perform(click());
         onView(isRoot()).perform(pressBack());
+        onView(isRoot()).perform(TestUtils.waitFor(600));
         onView(withId(R.id.eventList)).check(new TestUtils.RecyclerViewEventAssertion(1)); // There should be 1 events registered
+
 
         onView(withId(R.id.eventList)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         onView(withId(R.id.button)).perform(click()); // Click on the unregister button
         onView(withText("YES")).perform(click());
         onView(isRoot()).perform(pressBack());
+        onView(isRoot()).perform(TestUtils.waitFor(600));
         onView(withId(R.id.emptyResultText)).check(matches(isDisplayed())); //There should be no events now
     }
 

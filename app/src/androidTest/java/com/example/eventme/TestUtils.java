@@ -14,7 +14,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.is;
 
-import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
@@ -212,5 +211,24 @@ public class TestUtils {
                         return new float[]{0, 2000};
                     }
                 }, Press.FINGER));
+    }
+
+    public static ViewAction waitFor(final long millis) {
+        return new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return isDisplayed();
+            }
+
+            @Override
+            public String getDescription() {
+                return "Wait for " + millis + " milliseconds.";
+            }
+
+            @Override
+            public void perform(UiController uiController, final View view) {
+                uiController.loopMainThreadForAtLeast(millis);
+            }
+        };
     }
 }
