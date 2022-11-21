@@ -5,8 +5,6 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.contrib.PickerActions.setDate;
-import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withSpinnerText;
@@ -16,11 +14,6 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
-import android.app.Activity;
-import android.view.View;
-import android.widget.DatePicker;
-
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -38,12 +31,8 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class ExploreEspressoTest {
-    private View decorView;
     private FirebaseAuth mAuth;
     private FirebaseDatabase mDatabase;
-    private Activity mMainActivity;
-    private RecyclerView mRecyclerView;
-    private int itemCount = 0;
 
     @Rule
     public ActivityScenarioRule<MainActivity> activityScenarioRule = new ActivityScenarioRule<>(MainActivity.class);
@@ -56,9 +45,7 @@ public class ExploreEspressoTest {
         mDatabase = FirebaseDatabase.getInstance();
         mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
 
-        onView(withId(R.id.email)).perform(typeText("abc@xyz.com"));
-        onView(withId(R.id.password)).perform(typeText("123456"));
-        onView(withId(R.id.signIn)).perform(click());
+        TestUtils.loginTestUser();
     }
 
     @After
@@ -173,7 +160,4 @@ public class ExploreEspressoTest {
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         onView(withId(R.id.name)).check(matches(isDisplayed()));
     }
-
-
-
 }
