@@ -79,6 +79,45 @@ public class EventRegistrationActivity extends AppCompatActivity {
         builder2.setNegativeButton("No", (dialog, which) -> {
         });
         mUnregisterAlert = builder2.create();
+
+        mDatabase.getReference().child("users").child(mAuth.getUid()).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                User user = task.getResult().getValue(User.class);
+                if(user.getSavedEvents().containsKey(mEventId)){
+                    binding.savedButton.setImageResource(R.drawable.ic_baseline_turned_in_24);
+                }
+            }
+        });
+
+        binding.savedButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mDatabase.getReference().child("users").child(mAuth.getUid()).get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        User user = task.getResult().getValue(User.class);
+                        if(user.getSavedEvents().containsKey(mEventId)){
+                            mDatabase.getReference().child("users").child(mAuth.getUid()).child("savedEvents").child(mEventId).removeValue().addOnCompleteListener(userTask -> {
+                                if (userTask.isSuccessful()) {
+                                    Toast.makeText(getApplicationContext(), "Event unsaved successfully", Toast.LENGTH_LONG).show();
+                                    binding.savedButton.setImageResource(R.drawable.ic_baseline_turned_in_not_24);
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Failed unsaving event", Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        } else {
+                            mDatabase.getReference().child("users").child(mAuth.getUid()).child("savedEvents").child(mEventId).setValue(true).addOnCompleteListener(userTask -> {
+                                if (userTask.isSuccessful()) {
+                                    Toast.makeText(getApplicationContext(), "Event saved successfully", Toast.LENGTH_LONG).show();
+                                    binding.savedButton.setImageResource(R.drawable.ic_baseline_turned_in_24);
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Failed saving event", Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
     }
 
     @Override

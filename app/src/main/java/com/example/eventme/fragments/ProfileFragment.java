@@ -28,6 +28,7 @@ import com.example.eventme.viewmodels.ProfileFragmentViewModel;
 import com.example.eventme.viewmodels.ProfileFragmentViewModelFactory;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -147,6 +148,57 @@ public class ProfileFragment extends Fragment {
         // Click listeners
         binding.signOut.setOnClickListener(this::onClickSignOut);
         binding.profilePic.setOnClickListener(this::onClickUploadProfilePic);
+
+        binding.tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if(tab.getPosition() == 0){
+                    mViewModel.getRegisteredEventsData().observe(getViewLifecycleOwner(), events -> {
+                        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+                        try {
+                            fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                                if (location != null) {
+                                    for (Event event : events) {
+                                        double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
+                                        event.setDistanceFromUserLocation(distance);
+                                    }
+                                }
+                                mListViewModel.setEventsData(events);
+                            });
+                        } catch (SecurityException e) {
+                            Log.e("Exception: %s", e.getMessage(), e);
+                        }
+                    });
+                } else if (tab.getPosition() == 1){
+                    mViewModel.getSavedEventsData().observe(getViewLifecycleOwner(), events -> {
+                        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+                        try {
+                            fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                                if (location != null) {
+                                    for (Event event : events) {
+                                        double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
+                                        event.setDistanceFromUserLocation(distance);
+                                    }
+                                }
+                                mListViewModel.setEventsData(events);
+                            });
+                        } catch (SecurityException e) {
+                            Log.e("Exception: %s", e.getMessage(), e);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
     }
 
     @Override

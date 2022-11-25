@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -22,14 +23,18 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.eventme.BuildConfig;
 import com.example.eventme.EventRegistrationActivity;
 import com.example.eventme.R;
 import com.example.eventme.adapters.EventBoxAdapter;
 import com.example.eventme.databinding.FragmentEventListBinding;
 import com.example.eventme.models.Event;
+import com.example.eventme.models.User;
 import com.example.eventme.viewmodels.EventListFragmentViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +50,8 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
     private RecyclerView mRecycler;
     private EventListFragmentViewModel mViewModel;
     private ActivityResultLauncher<String[]> requestPermissionLauncher;
+    private FirebaseDatabase mDatabase;
+    private FirebaseAuth mAuth;
 
     @Nullable
     @Override
@@ -57,6 +64,13 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        mDatabase = FirebaseDatabase.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+        if (BuildConfig.DEBUG) {
+            mAuth.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_AUTH_PORT);
+            mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
+        }
 
         // Permission request dialogue callback
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
@@ -76,6 +90,33 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
             Intent intent = new Intent(requireActivity(), EventRegistrationActivity.class);
             intent.putExtra("com.example.eventme.EventRegistration.eventId", event.getEventId());
             startActivity(intent);
+        });
+
+        mEventBoxAdapter.setOnSavedClickListener((position, v) -> {
+            // Pass eventId to Registration activity when clicking event box
+            Event event = mEventBoxAdapter.getItemByPos(position);
+            mDatabase.getReference().child("users").child(mAuth.getUid()).get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    User user = task.getResult().getValue(User.class);
+                    if(user.getSavedEvents().containsKey(event.getEventId())){
+                        mDatabase.getReference().child("users").child(mAuth.getUid()).child("savedEvents").child(event.getEventId()).removeValue().addOnCompleteListener(userTask -> {
+                            if (userTask.isSuccessful()) {
+                                Toast.makeText(getContext(), "Event unsaved successfully", Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(getContext(), "Failed unsaving event", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    } else {
+                        mDatabase.getReference().child("users").child(mAuth.getUid()).child("savedEvents").child(event.getEventId()).setValue(true).addOnCompleteListener(userTask -> {
+                            if (userTask.isSuccessful()) {
+                                Toast.makeText(getContext(), "Event saved successfully", Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(getContext(), "Failed saving event", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }
+            });
         });
 
         // Set up RecyclerView

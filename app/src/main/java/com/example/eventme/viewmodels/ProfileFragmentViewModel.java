@@ -22,6 +22,7 @@ public class ProfileFragmentViewModel extends ViewModel {
 
     private MutableLiveData<User> userData = new MutableLiveData<>(new User());
     private MutableLiveData<List<Event>> registeredEventsData = new MutableLiveData<>(new ArrayList<>());
+    private MutableLiveData<List<Event>> savedEventsData = new MutableLiveData<>(new ArrayList<>());
 
     public ProfileFragmentViewModel(FirebaseAuth auth, FirebaseDatabase database) {
         mAuth = auth;
@@ -34,6 +35,10 @@ public class ProfileFragmentViewModel extends ViewModel {
 
     public LiveData<List<Event>> getRegisteredEventsData() {
         return registeredEventsData;
+    }
+
+    public LiveData<List<Event>> getSavedEventsData() {
+        return savedEventsData;
     }
 
     public void updateUserData() {
@@ -71,6 +76,25 @@ public class ProfileFragmentViewModel extends ViewModel {
                                 // Finished loading all events
                                 if (events.size() == user.getRegisteredEvents().size())
                                     registeredEventsData.setValue(events);
+                            } else {
+                                Log.e(TAG, "Error getting event", eventTask.getException());
+                            }
+                        });
+                    }
+
+                    List<Event> eventsTwo = new ArrayList<>();
+
+                    if (user.getSavedEvents().isEmpty())
+                        savedEventsData.setValue(eventsTwo);
+
+                    for (String id : user.getSavedEvents().keySet()) {
+                        mDatabase.getReference().child("events").child(id).get().addOnCompleteListener(eventTask -> {
+                            if (eventTask.isSuccessful()) {
+                                Event event = eventTask.getResult().getValue(Event.class);
+                                eventsTwo.add(event);
+                                // Finished loading all events
+                                if (eventsTwo.size() == user.getSavedEvents().size())
+                                    savedEventsData.setValue(eventsTwo);
                             } else {
                                 Log.e(TAG, "Error getting event", eventTask.getException());
                             }
