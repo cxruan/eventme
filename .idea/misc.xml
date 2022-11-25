@@ -10,7 +10,7 @@
         <entry key="app/src/main/res/drawable/ic_baseline_access_time_24.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_baseline_turned_in_24.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_baseline_turned_in_not_24.xml" value="0.1" />
-        <entry key="app/src/main/res/layout/activity_event_registration.xml" value="0.16510416666666666" />
+        <entry key="app/src/main/res/layout/activity_event_registration.xml" value="0.25" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.16510416666666666" />
         <entry key="app/src/main/res/layout/activity_nav.xml" value="0.16510416666666666" />
         <entry key="app/src/main/res/layout/event_box.xml" value="0.1843065693430657" />

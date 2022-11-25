@@ -99,6 +99,7 @@ public class ProfileFragment extends Fragment {
                 binding.profilePicOverlay.setVisibility(View.VISIBLE);
             }
         });
+
         mViewModel.getRegisteredEventsData().observe(getViewLifecycleOwner(), events -> {
             FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
             try {

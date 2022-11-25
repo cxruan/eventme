@@ -86,7 +86,7 @@ public class EventBoxAdapter extends RecyclerView.Adapter<EventBoxAdapter.ViewHo
         public ImageButton savedButton;
         private FirebaseDatabase mDatabase;
         private FirebaseAuth mAuth;
-        public Boolean saved;
+        public Boolean saved = false;
         public int position;
 
 
