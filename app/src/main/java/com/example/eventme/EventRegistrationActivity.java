@@ -3,6 +3,7 @@ package com.example.eventme;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -18,7 +19,10 @@ import com.example.eventme.utils.GlideApp;
 import com.example.eventme.utils.Utils;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -37,6 +41,7 @@ public class EventRegistrationActivity extends AppCompatActivity {
     private Event mEvent;
     private AlertDialog mConflictingAlert;
     private AlertDialog mUnregisterAlert;
+    private boolean saved;
 
 
     @Override
@@ -80,44 +85,6 @@ public class EventRegistrationActivity extends AppCompatActivity {
         });
         mUnregisterAlert = builder2.create();
 
-        mDatabase.getReference().child("users").child(mAuth.getUid()).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                User user = task.getResult().getValue(User.class);
-                if(user.getSavedEvents().containsKey(mEventId)){
-                    binding.savedButton.setImageResource(R.drawable.ic_baseline_turned_in_24);
-                }
-            }
-        });
-
-        binding.savedButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mDatabase.getReference().child("users").child(mAuth.getUid()).get().addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        User user = task.getResult().getValue(User.class);
-                        if(user.getSavedEvents().containsKey(mEventId)){
-                            mDatabase.getReference().child("users").child(mAuth.getUid()).child("savedEvents").child(mEventId).removeValue().addOnCompleteListener(userTask -> {
-                                if (userTask.isSuccessful()) {
-                                    Toast.makeText(getApplicationContext(), "Event unsaved successfully", Toast.LENGTH_LONG).show();
-                                    binding.savedButton.setImageResource(R.drawable.ic_baseline_turned_in_not_24);
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Failed unsaving event", Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        } else {
-                            mDatabase.getReference().child("users").child(mAuth.getUid()).child("savedEvents").child(mEventId).setValue(true).addOnCompleteListener(userTask -> {
-                                if (userTask.isSuccessful()) {
-                                    Toast.makeText(getApplicationContext(), "Event saved successfully", Toast.LENGTH_LONG).show();
-                                    binding.savedButton.setImageResource(R.drawable.ic_baseline_turned_in_24);
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Failed saving event", Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-        });
     }
 
     @Override
@@ -127,6 +94,36 @@ public class EventRegistrationActivity extends AppCompatActivity {
         // Hide event info until data fetched
         binding.infoContainer.setVisibility(View.INVISIBLE);
         loadData();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.event_registration_toolbar, menu);
+        MenuItem savedButton = menu.findItem(R.id.action_save);
+
+        // Set up event saving
+        if (mAuth.getCurrentUser() != null) {
+            mDatabase.getReference().child("users").child(mAuth.getUid()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    User user = snapshot.getValue(User.class);
+                    savedButton.setVisible(true);
+                    if (user.getSavedEvents().containsKey(mEventId)) {
+                        saved = true;
+                        savedButton.setIcon(R.drawable.ic_baseline_turned_in_24);
+                    } else {
+                        saved = false;
+                        savedButton.setIcon(R.drawable.ic_baseline_turned_in_not_24_white);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e(TAG, "onCancelled: ", error.toException());
+                }
+            });
+        }
+        return super.onCreateOptionsMenu(menu);
     }
 
     private void loadData() {
@@ -279,6 +276,31 @@ public class EventRegistrationActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 onBackPressed();
+                return true;
+            case R.id.action_save:
+                if (mAuth.getCurrentUser() != null) {
+                    if (saved) {
+                        mDatabase.getReference().child("users").child(mAuth.getUid()).child("savedEvents").child(mEventId).removeValue().addOnCompleteListener(userTask -> {
+                            if (userTask.isSuccessful()) {
+                                saved = false;
+                                Toast.makeText(getApplicationContext(), "Event unsaved successfully", Toast.LENGTH_LONG).show();
+                                item.setIcon(R.drawable.ic_baseline_turned_in_not_24_white);
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Failed unsaving event", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    } else {
+                        mDatabase.getReference().child("users").child(mAuth.getUid()).child("savedEvents").child(mEventId).setValue(true).addOnCompleteListener(userTask -> {
+                            if (userTask.isSuccessful()) {
+                                saved = true;
+                                Toast.makeText(getApplicationContext(), "Event saved successfully", Toast.LENGTH_LONG).show();
+                                item.setIcon(R.drawable.ic_baseline_turned_in_24);
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Failed saving event", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }
                 return true;
         }
 

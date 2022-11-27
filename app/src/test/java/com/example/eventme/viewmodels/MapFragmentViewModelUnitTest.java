@@ -92,10 +92,7 @@ public class MapFragmentViewModelUnitTest {
 
         viewModel.loadAllData();
 
-        verify(observer, atLeastOnce()).onChanged(captor.capture());
-        HashMap<String, Event> capturedArgument = captor.getValue();
-
         // Test oracle
-        assertTrue(capturedArgument.containsKey("c"));
+        assertNotNull(viewModel.getEventById("c"));
     }
 }

@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -29,7 +28,6 @@ import com.example.eventme.R;
 import com.example.eventme.adapters.EventBoxAdapter;
 import com.example.eventme.databinding.FragmentEventListBinding;
 import com.example.eventme.models.Event;
-import com.example.eventme.models.User;
 import com.example.eventme.viewmodels.EventListFragmentViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -90,33 +88,6 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
             Intent intent = new Intent(requireActivity(), EventRegistrationActivity.class);
             intent.putExtra("com.example.eventme.EventRegistration.eventId", event.getEventId());
             startActivity(intent);
-        });
-
-        mEventBoxAdapter.setOnSavedClickListener((position, v) -> {
-            // Pass eventId to Registration activity when clicking event box
-            Event event = mEventBoxAdapter.getItemByPos(position);
-            mDatabase.getReference().child("users").child(mAuth.getUid()).get().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    User user = task.getResult().getValue(User.class);
-                    if(user.getSavedEvents().containsKey(event.getEventId())){
-                        mDatabase.getReference().child("users").child(mAuth.getUid()).child("savedEvents").child(event.getEventId()).removeValue().addOnCompleteListener(userTask -> {
-                            if (userTask.isSuccessful()) {
-                                Toast.makeText(getContext(), "Event unsaved successfully", Toast.LENGTH_LONG).show();
-                            } else {
-                                Toast.makeText(getContext(), "Failed unsaving event", Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    } else {
-                        mDatabase.getReference().child("users").child(mAuth.getUid()).child("savedEvents").child(event.getEventId()).setValue(true).addOnCompleteListener(userTask -> {
-                            if (userTask.isSuccessful()) {
-                                Toast.makeText(getContext(), "Event saved successfully", Toast.LENGTH_LONG).show();
-                            } else {
-                                Toast.makeText(getContext(), "Failed saving event", Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
-                }
-            });
         });
 
         // Set up RecyclerView
