@@ -1,23 +1,43 @@
 package com.example.eventme;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.actionWithAssertions;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.is;
 
 import android.view.View;
+import android.view.ViewParent;
+import android.widget.FrameLayout;
 
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.NoMatchingViewException;
+import androidx.test.espresso.PerformException;
+import androidx.test.espresso.UiController;
+import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.ViewAssertion;
+import androidx.test.espresso.action.CoordinatesProvider;
+import androidx.test.espresso.action.GeneralLocation;
+import androidx.test.espresso.action.GeneralSwipeAction;
+import androidx.test.espresso.action.Press;
+import androidx.test.espresso.action.Swipe;
+import androidx.test.espresso.matcher.ViewMatchers;
+import androidx.test.espresso.util.HumanReadables;
 
 import com.example.eventme.adapters.EventBoxAdapter;
 import com.example.eventme.models.Event;
+
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 
 import java.util.List;
 
@@ -109,5 +129,106 @@ public class TestUtils {
                 }
             }
         }
+    }
+
+    // Adapted from https://stackoverflow.com/a/46037284
+    public static ViewAction nestedScrollTo(int position) {
+        return new ViewAction() {
+
+            @Override
+            public Matcher<View> getConstraints() {
+                return Matchers.allOf(isDescendantOfA(isAssignableFrom(NestedScrollView.class)), withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE));
+            }
+
+            @Override
+            public String getDescription() {
+                return "View is not NestedScrollView";
+            }
+
+            @Override
+            public void perform(UiController uiController, View view) {
+                try {
+                    RecyclerView recyclerView = (RecyclerView) view;
+                    View child = recyclerView.getChildAt(position);
+                    NestedScrollView nestedScrollView = (NestedScrollView) findFirstParentLayoutOfClass(view, NestedScrollView.class);
+                    if (nestedScrollView != null) {
+                        nestedScrollView.scrollTo(0, child.getTop());
+                    } else {
+                        throw new Exception("Unable to find NestedScrollView parent.");
+                    }
+                } catch (Exception e) {
+                    throw new PerformException.Builder()
+                            .withActionDescription(this.getDescription())
+                            .withViewDescription(HumanReadables.describe(view))
+                            .withCause(e)
+                            .build();
+                }
+                uiController.loopMainThreadUntilIdle();
+            }
+
+        };
+    }
+
+    private static View findFirstParentLayoutOfClass(View view, Class<? extends View> parentClass) {
+        ViewParent parent = new FrameLayout(view.getContext());
+        ViewParent incrementView = null;
+        int i = 0;
+        while (parent != null && !(parent.getClass() == parentClass)) {
+            if (i == 0) {
+                parent = findParent(view);
+            } else {
+                parent = findParent(incrementView);
+            }
+            incrementView = parent;
+            i++;
+        }
+        return (View) parent;
+    }
+
+    private static ViewParent findParent(View view) {
+        return view.getParent();
+    }
+
+    private static ViewParent findParent(ViewParent view) {
+        return view.getParent();
+    }
+
+    public static ViewAction swipeToTop() {
+        return actionWithAssertions(
+                new GeneralSwipeAction(Swipe.FAST, GeneralLocation.CENTER, new CoordinatesProvider() {
+                    @Override
+                    public float[] calculateCoordinates(View view) {
+                        return new float[]{0, 0};
+                    }
+                }, Press.FINGER));
+    }
+
+    public static ViewAction swipeToBottom() {
+        return actionWithAssertions(
+                new GeneralSwipeAction(Swipe.FAST, GeneralLocation.CENTER, new CoordinatesProvider() {
+                    @Override
+                    public float[] calculateCoordinates(View view) {
+                        return new float[]{0, 2000};
+                    }
+                }, Press.FINGER));
+    }
+
+    public static ViewAction waitFor(final long millis) {
+        return new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return isDisplayed();
+            }
+
+            @Override
+            public String getDescription() {
+                return "Wait for " + millis + " milliseconds.";
+            }
+
+            @Override
+            public void perform(UiController uiController, final View view) {
+                uiController.loopMainThreadForAtLeast(millis);
+            }
+        };
     }
 }
