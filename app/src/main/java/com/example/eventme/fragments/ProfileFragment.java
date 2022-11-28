@@ -35,6 +35,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.util.List;
+
 public class ProfileFragment extends Fragment {
     private static final String TAG = "ProfileFragment";
 
@@ -54,7 +56,6 @@ public class ProfileFragment extends Fragment {
         return binding.getRoot();
     }
 
-    @SuppressLint("MissingPermission")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -101,20 +102,7 @@ public class ProfileFragment extends Fragment {
         });
 
         mViewModel.getRegisteredEventsData().observe(getViewLifecycleOwner(), events -> {
-            FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
-            try {
-                fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-                    if (location != null) {
-                        for (Event event : events) {
-                            double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
-                            event.setDistanceFromUserLocation(distance);
-                        }
-                    }
-                    mListViewModel.setEventsData(events);
-                });
-            } catch (SecurityException e) {
-                Log.e("Exception: %s", e.getMessage(), e);
-            }
+            updateEventListUI(events);
         });
 
 
@@ -139,7 +127,6 @@ public class ProfileFragment extends Fragment {
 
                             mDatabase.getReference().child("users").child(mAuth.getUid()).child("profilePictureURI").setValue(newUri, (error, reference) -> {
                                 loadProfilePicture(newUri);
-                                mViewModel.updateUserData(); // Update ViewModel after profile picture uploaded successfully
                                 Toast.makeText(getContext(), "Profile picture uploaded successfully", Toast.LENGTH_LONG).show();
                             });
                         });
@@ -153,39 +140,17 @@ public class ProfileFragment extends Fragment {
         binding.tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                if(tab.getPosition() == 0){
+                if (tab.getPosition() == 0) {
+                    mViewModel.getSavedEventsData().removeObservers(getViewLifecycleOwner());
+
                     mViewModel.getRegisteredEventsData().observe(getViewLifecycleOwner(), events -> {
-                        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
-                        try {
-                            fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-                                if (location != null) {
-                                    for (Event event : events) {
-                                        double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
-                                        event.setDistanceFromUserLocation(distance);
-                                    }
-                                }
-                                mListViewModel.setEventsData(events);
-                            });
-                        } catch (SecurityException e) {
-                            Log.e("Exception: %s", e.getMessage(), e);
-                        }
+                        updateEventListUI(events);
                     });
-                } else if (tab.getPosition() == 1){
+                } else if (tab.getPosition() == 1) {
+                    mViewModel.getRegisteredEventsData().removeObservers(getViewLifecycleOwner());
+
                     mViewModel.getSavedEventsData().observe(getViewLifecycleOwner(), events -> {
-                        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
-                        try {
-                            fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-                                if (location != null) {
-                                    for (Event event : events) {
-                                        double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
-                                        event.setDistanceFromUserLocation(distance);
-                                    }
-                                }
-                                mListViewModel.setEventsData(events);
-                            });
-                        } catch (SecurityException e) {
-                            Log.e("Exception: %s", e.getMessage(), e);
-                        }
+                        updateEventListUI(events);
                     });
                 }
             }
@@ -202,12 +167,27 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+    @SuppressLint("MissingPermission")
+    private void updateEventListUI(List<Event> events) {
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+        try {
+            fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                if (location != null) {
+                    for (Event event : events) {
+                        double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
+                        event.setDistanceFromUserLocation(distance);
+                    }
+                }
+                mListViewModel.setEventsData(events);
+            });
+        } catch (SecurityException e) {
+            Log.e("Exception: %s", e.getMessage(), e);
+        }
+    }
+
     @Override
     public void onStart() {
         super.onStart();
-
-        if (mViewModel != null)
-            mViewModel.loadAllData();
     }
 
     private void loadProfilePicture(String uri) {
@@ -220,6 +200,10 @@ public class ProfileFragment extends Fragment {
     }
 
     private void onClickSignOut(View view) {
+        mViewModel.removeLoadUserInfoListener();
+        mViewModel.removeLoadSavedEventsListener();
+        mViewModel.removeLoadRegisteredEventsListener();
+
         mAuth.signOut();
         NavHostFragment.findNavController(this).navigate(R.id.action_profileFragment_to_profileUnloggedInFragment);
     }
