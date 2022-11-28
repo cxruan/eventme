@@ -9,6 +9,7 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -111,6 +112,7 @@ public class MapFragment extends Fragment implements
         // Binding view models
         mViewModel = new ViewModelProvider(requireActivity(), new MapFragmentViewModelFactory(mDatabase)).get(MapFragmentViewModel.class);
         mListViewModel = new ViewModelProvider(this).get(EventListFragmentViewModel.class);
+        binding.navigationButton.setVisibility(View.INVISIBLE);
 
         // Permission request dialogue callback
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
@@ -232,7 +234,18 @@ public class MapFragment extends Fragment implements
             startActivity(intent);
         });
 
+        Double lat = mViewModel.getEventById(eventId).getGeoLocation().get("lat");
+        Double lng = mViewModel.getEventById(eventId).getGeoLocation().get("lng");
+
+        binding.navigationButton.setOnClickListener(view -> {
+            Uri navigation = Uri.parse("google.navigation:q="+ String.valueOf(lat) +","+ String.valueOf(lng) +"");
+            Intent navigationIntent = new Intent(Intent.ACTION_VIEW, navigation);
+            navigationIntent.setPackage("com.google.android.apps.maps");
+            startActivity(navigationIntent);
+        });
+
         mEventBoxView.setVisibility(View.VISIBLE);
+        binding.navigationButton.setVisibility(View.VISIBLE);
 
         // Get actual height
         mEventBoxView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -245,7 +258,11 @@ public class MapFragment extends Fragment implements
                 animation.setDuration(300);
                 animation.start();
 
-                mMap.setPadding(0, 0, 0, mEventBoxView.getMeasuredHeight() + Math.round(EVENT_LIST_CARD_OFFSET_DP * pxInDp)); // Set Google Map control position
+                ObjectAnimator animationButton = ObjectAnimator.ofFloat(binding.navigationButton, "translationY", binding.navigationButton.getMeasuredHeight() + 100, 0f);
+                animationButton.setDuration(300);
+                animationButton.start();
+
+                mMap.setPadding(0, 0, 0, mEventBoxView.getMeasuredHeight() + binding.navigationButton.getMeasuredHeight() + Math.round(EVENT_LIST_CARD_OFFSET_DP * pxInDp)); // Set Google Map control position
             }
         });
     }
@@ -256,14 +273,18 @@ public class MapFragment extends Fragment implements
         // Animate
         ObjectAnimator animation = ObjectAnimator.ofFloat(mEventBoxView, "translationY", 0f, 200 * pxInDp);
         animation.setDuration(300);
+        ObjectAnimator animationButton = ObjectAnimator.ofFloat(binding.navigationButton, "translationY", 0f, 200 * pxInDp);
+        animationButton.setDuration(300);
         animation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animator) {
                 mEventBoxView.setVisibility(View.INVISIBLE);
+                binding.navigationButton.setVisibility(View.INVISIBLE);
                 mMap.setPadding(0, 0, 0, Math.round(EVENT_LIST_CARD_OFFSET_DP * pxInDp)); // Set Google Map control position
             }
         });
         animation.start();
+        animationButton.start();
     }
 
     private boolean onListTouchListener(View vw, MotionEvent event) {
