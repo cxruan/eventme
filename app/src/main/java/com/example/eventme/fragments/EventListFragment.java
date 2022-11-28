@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.eventme.BuildConfig;
 import com.example.eventme.EventRegistrationActivity;
 import com.example.eventme.R;
 import com.example.eventme.adapters.EventBoxAdapter;
@@ -30,6 +31,8 @@ import com.example.eventme.models.Event;
 import com.example.eventme.viewmodels.EventListFragmentViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +48,8 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
     private RecyclerView mRecycler;
     private EventListFragmentViewModel mViewModel;
     private ActivityResultLauncher<String[]> requestPermissionLauncher;
+    private FirebaseDatabase mDatabase;
+    private FirebaseAuth mAuth;
 
     @Nullable
     @Override
@@ -57,6 +62,13 @@ public class EventListFragment extends Fragment implements AdapterView.OnItemSel
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        mDatabase = FirebaseDatabase.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+        if (BuildConfig.DEBUG) {
+            mAuth.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_AUTH_PORT);
+            mDatabase.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_DATABASE_PORT);
+        }
 
         // Permission request dialogue callback
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {

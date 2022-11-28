@@ -14,6 +14,7 @@ public class User {
     private String birthday;
     private String profilePictureURI;
     private Map<String, Boolean>  registeredEvents = new HashMap<>();
+    private Map<String, Boolean>  savedEvents = new HashMap<>();
 
     public User() {
         // Default constructor required for calls to DataSnapshot.getValue(User.class)
@@ -57,6 +58,10 @@ public class User {
 
     public Map<String, Boolean> getRegisteredEvents() {
         return registeredEvents;
+    }
+
+    public Map<String, Boolean> getSavedEvents() {
+        return savedEvents;
     }
 
 }

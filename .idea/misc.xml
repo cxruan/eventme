@@ -7,14 +7,19 @@
         <entry key="..\:/Users/simon/AndroidStudioProjects/eventme/app/src/main/res/layout/activity_nav.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/simon/AndroidStudioProjects/eventme/app/src/main/res/layout/fragment_map.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/simon/AndroidStudioProjects/eventme/app/src/main/res/layout/fragment_signup.xml" value="0.25416666666666665" />
-        <entry key="app/src/main/res/layout/activity_event_registration.xml" value="0.16510416666666666" />
+        <entry key="app/src/main/res/drawable/ic_baseline_access_time_24.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_baseline_turned_in_24.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_baseline_turned_in_not_24.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_event_registration.xml" value="0.25" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.16510416666666666" />
         <entry key="app/src/main/res/layout/activity_nav.xml" value="0.16510416666666666" />
-        <entry key="app/src/main/res/layout/event_box.xml" value="0.16510416666666666" />
+        <entry key="app/src/main/res/layout/event_box.xml" value="0.1843065693430657" />
         <entry key="app/src/main/res/layout/fragment_event_list.xml" value="0.16510416666666666" />
         <entry key="app/src/main/res/layout/fragment_explore.xml" value="0.1" />
         <entry key="app/src/main/res/layout/fragment_login.xml" value="0.16510416666666666" />
         <entry key="app/src/main/res/layout/fragment_map.xml" value="0.16510416666666666" />
+        <entry key="app/src/main/res/layout/fragment_profile.xml" value="0.28719573974609375" />
+        <entry key="app/src/main/res/layout/fragment_profile_unloggedin.xml" value="0.1" />
         <entry key="app/src/main/res/layout/fragment_signup.xml" value="0.1" />
       </map>
     </option>

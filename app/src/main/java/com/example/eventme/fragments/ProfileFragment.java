@@ -28,11 +28,14 @@ import com.example.eventme.viewmodels.ProfileFragmentViewModel;
 import com.example.eventme.viewmodels.ProfileFragmentViewModelFactory;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import java.util.List;
 
 public class ProfileFragment extends Fragment {
     private static final String TAG = "ProfileFragment";
@@ -53,7 +56,6 @@ public class ProfileFragment extends Fragment {
         return binding.getRoot();
     }
 
-    @SuppressLint("MissingPermission")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -98,21 +100,9 @@ public class ProfileFragment extends Fragment {
                 binding.profilePicOverlay.setVisibility(View.VISIBLE);
             }
         });
+
         mViewModel.getRegisteredEventsData().observe(getViewLifecycleOwner(), events -> {
-            FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
-            try {
-                fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-                    if (location != null) {
-                        for (Event event : events) {
-                            double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
-                            event.setDistanceFromUserLocation(distance);
-                        }
-                    }
-                    mListViewModel.setEventsData(events);
-                });
-            } catch (SecurityException e) {
-                Log.e("Exception: %s", e.getMessage(), e);
-            }
+            updateEventListUI(events);
         });
 
 
@@ -137,7 +127,6 @@ public class ProfileFragment extends Fragment {
 
                             mDatabase.getReference().child("users").child(mAuth.getUid()).child("profilePictureURI").setValue(newUri, (error, reference) -> {
                                 loadProfilePicture(newUri);
-                                mViewModel.updateUserData(); // Update ViewModel after profile picture uploaded successfully
                                 Toast.makeText(getContext(), "Profile picture uploaded successfully", Toast.LENGTH_LONG).show();
                             });
                         });
@@ -147,14 +136,58 @@ public class ProfileFragment extends Fragment {
         // Click listeners
         binding.signOut.setOnClickListener(this::onClickSignOut);
         binding.profilePic.setOnClickListener(this::onClickUploadProfilePic);
+
+        binding.tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if (tab.getPosition() == 0) {
+                    mViewModel.getSavedEventsData().removeObservers(getViewLifecycleOwner());
+
+                    mViewModel.getRegisteredEventsData().observe(getViewLifecycleOwner(), events -> {
+                        updateEventListUI(events);
+                    });
+                } else if (tab.getPosition() == 1) {
+                    mViewModel.getRegisteredEventsData().removeObservers(getViewLifecycleOwner());
+
+                    mViewModel.getSavedEventsData().observe(getViewLifecycleOwner(), events -> {
+                        updateEventListUI(events);
+                    });
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+    }
+
+    @SuppressLint("MissingPermission")
+    private void updateEventListUI(List<Event> events) {
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+        try {
+            fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                if (location != null) {
+                    for (Event event : events) {
+                        double distance = Utils.distanceBetweenLocations(location.getLatitude(), location.getLongitude(), event.getGeoLocation().get("lat"), event.getGeoLocation().get("lng"));
+                        event.setDistanceFromUserLocation(distance);
+                    }
+                }
+                mListViewModel.setEventsData(events);
+            });
+        } catch (SecurityException e) {
+            Log.e("Exception: %s", e.getMessage(), e);
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
-        if (mViewModel != null)
-            mViewModel.loadAllData();
     }
 
     private void loadProfilePicture(String uri) {
@@ -167,6 +200,10 @@ public class ProfileFragment extends Fragment {
     }
 
     private void onClickSignOut(View view) {
+        mViewModel.removeLoadUserInfoListener();
+        mViewModel.removeLoadSavedEventsListener();
+        mViewModel.removeLoadRegisteredEventsListener();
+
         mAuth.signOut();
         NavHostFragment.findNavController(this).navigate(R.id.action_profileFragment_to_profileUnloggedInFragment);
     }

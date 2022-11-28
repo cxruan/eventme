@@ -43,6 +43,8 @@ public class LoginFragment extends Fragment {
             mAuth.useEmulator("10.0.2.2", BuildConfig.FIREBASE_EMULATOR_AUTH_PORT);
         }
 
+
+
         // Click listeners
         binding.signIn.setOnClickListener(this::onClickSignIn);
         binding.signUp.setOnClickListener(this::onClickSignUp);
