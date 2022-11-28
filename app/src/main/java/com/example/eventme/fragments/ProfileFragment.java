@@ -135,6 +135,7 @@ public class ProfileFragment extends Fragment {
 
         // Click listeners
         binding.signOut.setOnClickListener(this::onClickSignOut);
+        binding.edit.setOnClickListener(this::onClickEdit);
         binding.profilePic.setOnClickListener(this::onClickUploadProfilePic);
 
         binding.tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -165,6 +166,10 @@ public class ProfileFragment extends Fragment {
 
             }
         });
+    }
+
+    private void onClickEdit(View view) {
+        NavHostFragment.findNavController(this).navigate(R.id.action_profileFragment_to_profileEditActivity);
     }
 
     @SuppressLint("MissingPermission")

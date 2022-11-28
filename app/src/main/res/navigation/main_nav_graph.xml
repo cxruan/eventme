@@ -40,6 +40,9 @@
         <action
             android:id="@+id/action_profileFragment_to_profileUnloggedInFragment"
             app:destination="@id/profileUnloggedInFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_profileEditActivity"
+            app:destination="@id/profileEditActivity" />
     </fragment>
     <fragment
         android:id="@+id/profileUnloggedInFragment"
@@ -54,4 +57,9 @@
         android:name="com.example.eventme.MainActivity"
         android:label="activity_main"
         tools:layout="@layout/activity_main" />
+    <activity
+        android:id="@+id/profileEditActivity"
+        android:name="com.example.eventme.ProfileEditActivity"
+        android:label="activity_profile_edit"
+        tools:layout="@layout/activity_profile_edit" />
 </navigation>

@@ -19,9 +19,6 @@ import com.example.eventme.BuildConfig;
 import com.example.eventme.R;
 import com.example.eventme.databinding.FragmentSignupBinding;
 import com.example.eventme.models.User;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
@@ -82,17 +79,14 @@ public class SignUpFragment extends Fragment {
         String birthday = binding.birthday.getText().toString();
 
         mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(TAG, "createUser:onComplete:" + task.isSuccessful());
+                .addOnCompleteListener(getActivity(), task -> {
+                    Log.d(TAG, "createUser:onComplete:" + task.isSuccessful());
 
-                        if (task.isSuccessful()) {
-                            onAuthSuccess(task.getResult().getUser(), firstName, lastName, birthday);
-                        } else {
-                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(getContext(), "Sign-up Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                        }
+                    if (task.isSuccessful()) {
+                        onAuthSuccess(task.getResult().getUser(), firstName, lastName, birthday);
+                    } else {
+                        Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                        Toast.makeText(getContext(), "Sign-up Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
     }
