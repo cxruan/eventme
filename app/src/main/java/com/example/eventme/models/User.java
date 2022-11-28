@@ -13,8 +13,8 @@ public class User {
     private String email;
     private String birthday;
     private String profilePictureURI;
-    private Map<String, Boolean>  registeredEvents = new HashMap<>();
-    private Map<String, Boolean>  savedEvents = new HashMap<>();
+    private Map<String, Boolean> registeredEvents = new HashMap<>();
+    private Map<String, Boolean> savedEvents = new HashMap<>();
 
     public User() {
         // Default constructor required for calls to DataSnapshot.getValue(User.class)
@@ -36,11 +36,17 @@ public class User {
         return firstName;
     }
 
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
     public String getLastName() {
         return lastName;
     }
 
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
     public String getEmail() {
         return email;
@@ -51,6 +57,9 @@ public class User {
         return birthday;
     }
 
+    public void setBirthday(String birthday) {
+        this.birthday = birthday;
+    }
 
     public String getProfilePictureURI() {
         return profilePictureURI;
